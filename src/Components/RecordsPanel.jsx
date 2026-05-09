@@ -21,9 +21,7 @@ export default function RecordsPanel({
             Movement Records
           </h2>
 
-          <div className="text-sm text-slate-500">
-            {typeFilteredHistory.length} entries
-          </div>
+          
         </div>
 
         {/* Aircraft Type Tabs */}
