@@ -73,6 +73,8 @@ export default function AircraftMovementLogbook() {
   });
   const [newReg, setNewReg] = useState("");
   const [newType, setNewType] = useState("");
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [editingData, setEditingData] = useState(null);
 
   const [history, setHistory] = useState(() => {
     const saved = localStorage.getItem("aircraft-logbook-history");
@@ -227,6 +229,37 @@ export default function AircraftMovementLogbook() {
   const clearLogbook = () => {
     if (window.confirm("Clear all logbook records?")) {
       setHistory([]);
+    }
+  };
+
+  const startEdit = (index) => {
+    setEditingIndex(index);
+    setEditingData({ ...history[index] });
+  };
+
+  const saveEdit = () => {
+    if (!editingData.aircraft || !editingData.fromStand || !editingData.toStand) {
+      alert("Please complete all required fields.");
+      return;
+    }
+    const updatedHistory = [...history];
+    updatedHistory[editingIndex] = editingData;
+    setHistory(updatedHistory);
+    setEditingIndex(null);
+    setEditingData(null);
+  };
+
+  const cancelEdit = () => {
+    setEditingIndex(null);
+    setEditingData(null);
+  };
+
+  const deleteEntry = (index) => {
+    if (window.confirm("Delete this movement record?")) {
+      const updatedHistory = history.filter((_, i) => i !== index);
+      setHistory(updatedHistory);
+      setEditingIndex(null);
+      setEditingData(null);
     }
   };
 
@@ -450,49 +483,154 @@ export default function AircraftMovementLogbook() {
               />
 
               <div className="space-y-2 sm:space-y-4 max-h-[50vh] sm:max-h-[700px] overflow-y-auto">
+                {editingIndex !== null && editingData && (
+                  <div className="border-2 border-blue-400 dark:border-blue-500 rounded-2xl sm:p-4 p-3 bg-blue-50 dark:bg-slate-800 transition-colors">
+                    <h3 className="font-bold sm:text-lg text-base text-slate-800 dark:text-white mb-3">
+                      Edit Movement Record
+                    </h3>
+                    <div className="space-y-3">
+                      <input
+                        list="aircraft-list"
+                        value={editingData.aircraft}
+                        onChange={(e) =>
+                          setEditingData({ ...editingData, aircraft: e.target.value })
+                        }
+                        placeholder="Select Aircraft"
+                        className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl sm:px-4 px-3 sm:py-3 py-2 text-sm transition-colors"
+                      />
+                      <div className="grid sm:grid-cols-2 gap-3">
+                        <select
+                          value={editingData.airport}
+                          onChange={(e) =>
+                            setEditingData({ ...editingData, airport: e.target.value })
+                          }
+                          className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl sm:px-4 px-3 sm:py-3 py-2 text-sm transition-colors"
+                        >
+                          {airports.map((airportCode) => (
+                            <option key={airportCode} value={airportCode}>
+                              {airportCode}
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          value={editingData.movementType}
+                          onChange={(e) =>
+                            setEditingData({ ...editingData, movementType: e.target.value })
+                          }
+                          className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl sm:px-4 px-3 sm:py-3 py-2 text-sm transition-colors"
+                        >
+                          {movementTypes.map((type) => (
+                            <option key={type} value={type}>
+                              {type}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-3">
+                        <input
+                          value={editingData.fromStand}
+                          onChange={(e) =>
+                            setEditingData({ ...editingData, fromStand: e.target.value.toUpperCase() })
+                          }
+                          placeholder="From Stand"
+                          className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl sm:px-4 px-3 sm:py-3 py-2 text-sm transition-colors"
+                        />
+                        <input
+                          value={editingData.toStand}
+                          onChange={(e) =>
+                            setEditingData({ ...editingData, toStand: e.target.value.toUpperCase() })
+                          }
+                          placeholder="To Stand"
+                          className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl sm:px-4 px-3 sm:py-3 py-2 text-sm transition-colors"
+                        />
+                      </div>
+                      <textarea
+                        value={editingData.notes}
+                        onChange={(e) =>
+                          setEditingData({ ...editingData, notes: e.target.value })
+                        }
+                        placeholder="Movement Notes"
+                        rows={3}
+                        className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl sm:px-4 px-3 sm:py-3 py-2 text-sm resize-none transition-colors"
+                      />
+                      <div className="flex gap-3">
+                        <button
+                          onClick={saveEdit}
+                          className="flex-1 bg-blue-600 text-white rounded-2xl sm:py-3 py-2 font-semibold text-sm sm:text-base"
+                        >
+                          Save Changes
+                        </button>
+                        <button
+                          onClick={cancelEdit}
+                          className="flex-1 bg-slate-400 text-white rounded-2xl sm:py-3 py-2 font-semibold text-sm sm:text-base"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
                 {filteredHistory.length === 0 ? (
                   <div className="border-2 border-dashed dark:border-slate-600 rounded-2xl p-8 text-center text-slate-400 dark:text-slate-500 transition-colors">
                     No records found.
                   </div>
                 ) : (
-                  filteredHistory.map((item, index) => (
-                    <div
-                      key={`${item.aircraft}-${index}`}
-                      className="border dark:border-slate-700 rounded-2xl sm:p-4 p-2 bg-slate-50 dark:bg-slate-900 transition-colors"
-                    >
-                      <div className="flex justify-between items-start sm:gap-4 gap-2">
-                        <div className="flex-1 min-w-0">
-                          <div className="font-bold sm:text-lg text-base text-slate-800 dark:text-white truncate">
-                            {item.aircraft}
+                  filteredHistory.map((item) => {
+                    const actualIndex = history.indexOf(item);
+                    return (
+                      <div
+                        key={`${item.aircraft}-${actualIndex}`}
+                        className="border dark:border-slate-700 rounded-2xl sm:p-4 p-2 bg-slate-50 dark:bg-slate-900 transition-colors"
+                      >
+                        <div className="flex justify-between items-start sm:gap-4 gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-bold sm:text-lg text-base text-slate-800 dark:text-white truncate">
+                              {item.aircraft}
+                            </div>
+
+                            <div className="sm:text-sm text-xs text-slate-500 dark:text-slate-300 mt-0.5">
+                              {item.date} • {item.time}
+                            </div>
+
+                            <div className="sm:text-sm text-xs font-medium text-blue-600 mt-0.5">
+                              {item.airport} • {item.movementType}
+                            </div>
                           </div>
 
-                          <div className="sm:text-sm text-xs text-slate-500 dark:text-slate-300 mt-0.5">
-                            {item.date} • {item.time}
-                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <div className="sm:text-sm text-xs text-slate-500 dark:text-slate-300">
+                              Stand
+                            </div>
 
-                          <div className="sm:text-sm text-xs font-medium text-blue-600 mt-0.5">
-                            {item.airport} • {item.movementType}
+                            <div className="font-semibold sm:text-base text-sm text-slate-700 dark:text-slate-200 whitespace-nowrap">
+                              {item.fromStand}→{item.toStand}
+                            </div>
                           </div>
                         </div>
 
-                        <div className="text-right flex-shrink-0">
-                          <div className="sm:text-sm text-xs text-slate-500 dark:text-slate-300">
-                            Stand
+                        {item.notes && (
+                          <div className="sm:mt-4 mt-2 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-xl sm:p-3 p-2 sm:text-sm text-xs text-slate-700 dark:text-slate-200 whitespace-pre-wrap transition-colors">
+                            {item.notes}
                           </div>
+                        )}
 
-                          <div className="font-semibold sm:text-base text-sm text-slate-700 dark:text-slate-200 whitespace-nowrap">
-                            {item.fromStand}→{item.toStand}
-                          </div>
+                        <div className="flex gap-2 sm:mt-4 mt-2 pt-2 sm:pt-4 border-t dark:border-slate-700">
+                          <button
+                            onClick={() => startEdit(actualIndex)}
+                            className="flex-1 bg-amber-500 text-white rounded-lg sm:px-3 px-2 sm:py-2 py-1 font-semibold text-xs sm:text-sm hover:bg-amber-600 transition-colors"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => deleteEntry(actualIndex)}
+                            className="flex-1 bg-red-500 text-white rounded-lg sm:px-3 px-2 sm:py-2 py-1 font-semibold text-xs sm:text-sm hover:bg-red-600 transition-colors"
+                          >
+                            Delete
+                          </button>
                         </div>
                       </div>
-
-                      {item.notes && (
-                        <div className="sm:mt-4 mt-2 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-xl sm:p-3 p-2 sm:text-sm text-xs text-slate-700 dark:text-slate-200 whitespace-pre-wrap transition-colors">
-                          {item.notes}
-                        </div>
-                      )}
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
 
