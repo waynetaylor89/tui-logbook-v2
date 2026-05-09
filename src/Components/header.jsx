@@ -1,0 +1,19 @@
+export default function Header({ fleetCount }) {
+  return (
+    <div className="bg-white rounded-2xl shadow-lg p-4 flex justify-between items-center">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-800">
+          MAN Aircraft Movement Logbook
+        </h1>
+
+        <div className="text-sm text-slate-500 mt-1">
+          {fleetCount} aircraft loaded
+        </div>
+      </div>
+
+      <div className="text-sm font-medium text-slate-600">
+        {new Date().toLocaleTimeString()}
+      </div>
+    </div>
+  );
+}

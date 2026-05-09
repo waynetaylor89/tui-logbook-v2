@@ -1,4 +1,15 @@
+# App.jsx
+
+```jsx
 import React, { useEffect, useMemo, useState } from "react";
+
+import Header from "./components/Header";
+import StatsCards from "./components/StatsCards";
+import FleetManager from "./components/FleetManager";
+import MovementForm from "./components/MovementForm";
+import RecordsPanel from "./components/RecordsPanel";
+
+import { exportLogbookCSV } from "./utils/exportCSV";
 
 export default function AircraftMovementLogbook() {
   const airport = "MAN";
@@ -50,32 +61,6 @@ export default function AircraftMovementLogbook() {
     "G-TUKA - Boeing 737 MAX 8",
     "G-TUKB - Boeing 737 MAX 8",
     "G-TUKC - Boeing 737 MAX 8",
-    "G-TUKD - Boeing 737 MAX 8",
-    "G-TUKE - Boeing 737 MAX 8",
-    "G-TUKF - Boeing 737 MAX 8",
-    "G-TUKG - Boeing 737 MAX 8",
-    "G-TUKH - Boeing 737 MAX 8",
-    "G-TUKI - Boeing 737 MAX 8",
-    "G-TUKJ - Boeing 737 MAX 8",
-    "G-TUKK - Boeing 737 MAX 8",
-    "G-TUKL - Boeing 737 MAX 8",
-    "G-TUKM - Boeing 737 MAX 8",
-    "G-TUKN - Boeing 737 MAX 8",
-    "G-TUKO - Boeing 737 MAX 8",
-    "G-TUKP - Boeing 737 MAX 8",
-    "G-TUMF - Boeing 737 MAX 8",
-    "G-TUMM - Boeing 737 MAX 8",
-    "G-TAWA - Boeing 737-800",
-    "G-TAWB - Boeing 737-800",
-    "G-TAWC - Boeing 737-800",
-    "G-TAWD - Boeing 737-800",
-    "G-TAWE - Boeing 737-800",
-    "G-TAWF - Boeing 737-800",
-    "G-TAWG - Boeing 737-800",
-    "G-TAWH - Boeing 737-800",
-    "G-TAWI - Boeing 737-800",
-    "G-TAWJ - Boeing 737-800",
-    "G-TAWK - Boeing 737-800",
   ].sort();
 
   const [fleet, setFleet] = useState(() => {
@@ -247,468 +232,527 @@ export default function AircraftMovementLogbook() {
   };
 
   const exportLogbook = () => {
-    const rows = [
-      [
-        "Aircraft",
-        "Movement Type",
-        "From Stand",
-        "To Stand",
-        "Date",
-        "Time",
-        "Notes",
-      ],
-
-      ...typeFilteredHistory.map((entry) => [
-        entry.aircraft,
-        entry.movementType,
-        entry.fromStand,
-        entry.toStand,
-        entry.date,
-        entry.time,
-        entry.notes,
-      ]),
-    ];
-
-    const csv = rows
-      .map((row) => row.map((item) => `"${item}"`).join(","))
-      .join("\n");
-
-    const blob = new Blob([csv], { type: "text/csv" });
-
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download = "aircraft-logbook.csv";
-    link.click();
-
-    URL.revokeObjectURL(url);
-  };
-
+  exportLogbookCSV(typeFilteredHistory);
+};
+  
   return (
     <div className="min-h-screen bg-sky-200">
       <div className="min-h-screen bg-sky-100 p-3 lg:p-6">
         <div className="max-w-7xl mx-auto space-y-4">
 
-          {/* Header */}
-          <div className="bg-white rounded-2xl shadow-lg p-4 flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-800">
-                MAN Aircraft Movement Logbook
-              </h1>
+          <Header fleetCount={fleet.length} />
 
-              <div className="text-sm text-slate-500 mt-1">
-                {fleet.length} aircraft loaded
-              </div>
-            </div>
+          <StatsCards stats={stats} />
 
-            <div className="text-sm font-medium text-slate-600">
-              {new Date().toLocaleTimeString()}
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-            <div className="bg-white rounded-2xl shadow-lg p-4">
-              <div className="text-sm text-slate-500 mb-1">
-                Total Movements
-              </div>
-
-              <div className="text-4xl font-bold text-blue-600">
-                {stats.totalMovements}
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-lg p-4">
-              <div className="text-sm text-slate-500 mb-3">
-                Top Aircraft
-              </div>
-
-              <div className="space-y-2 text-sm">
-                {stats.topAircraft.map(([name, count]) => (
-                  <div
-                    key={name}
-                    className="flex justify-between"
-                  >
-                    <span className="truncate mr-2">
-                      {name}
-                    </span>
-
-                    <span className="font-bold text-blue-600">
-                      {count}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-lg p-4">
-              <div className="text-sm text-slate-500 mb-3">
-                Most Used Stands
-              </div>
-
-              <div className="space-y-2 text-sm">
-                {stats.topStands.map(([name, count]) => (
-                  <div
-                    key={name}
-                    className="flex justify-between"
-                  >
-                    <span>{name}</span>
-
-                    <span className="font-bold text-emerald-600">
-                      {count}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-          </div>
-
-          {/* Main Grid */}
           <div className="grid lg:grid-cols-3 gap-4">
 
-            {/* Fleet Manager */}
-            <div className="bg-white rounded-2xl shadow-lg p-4 space-y-4">
-              <h2 className="text-xl font-bold text-slate-800">
-                Fleet Manager
-              </h2>
+            <FleetManager
+              newReg={newReg}
+              setNewReg={setNewReg}
+              newType={newType}
+              setNewType={setNewType}
+              tuiAircraftTypes={tuiAircraftTypes}
+              addAircraftToFleet={addAircraftToFleet}
+            />
 
-              <input
-                value={newReg}
-                onChange={(e) =>
-                  setNewReg(e.target.value.toUpperCase())
-                }
-                placeholder="Aircraft Registration"
-                className="w-full border rounded-xl px-4 py-3 bg-slate-50"
-              />
+            <MovementForm
+              movementDate={movementDate}
+              setMovementDate={setMovementDate}
+              aircraft={aircraft}
+              setAircraft={setAircraft}
+              movementType={movementType}
+              setMovementType={setMovementType}
+              fromStand={fromStand}
+              setFromStand={setFromStand}
+              toStand={toStand}
+              setToStand={setToStand}
+              notes={notes}
+              setNotes={setNotes}
+              movementTypes={movementTypes}
+              airportStands={airportStands}
+              filteredAircraftOptions={filteredAircraftOptions}
+              showAircraftSuggestions={showAircraftSuggestions}
+              setShowAircraftSuggestions={setShowAircraftSuggestions}
+              addLogEntry={addLogEntry}
+              exportLogbook={exportLogbook}
+            />
 
-              <select
-                value={newType}
-                onChange={(e) => setNewType(e.target.value)}
-                className="w-full border rounded-xl px-4 py-3 bg-slate-50"
-              >
-                <option value="">
-                  Select Aircraft Type
-                </option>
-
-                {tuiAircraftTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-
-              <button
-                onClick={addAircraftToFleet}
-                className="w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold"
-              >
-                Add Aircraft
-              </button>
-            </div>
-
-            {/* Movement Entry */}
-            <div className="bg-white rounded-2xl shadow-lg p-4 space-y-4">
-              <h2 className="text-xl font-bold text-slate-800">
-                New Movement
-              </h2>
-
-              <input
-                type="date"
-                value={movementDate}
-                onChange={(e) =>
-                  setMovementDate(e.target.value)
-                }
-                className="w-full border rounded-xl px-4 py-3 bg-slate-50"
-              />
-
-              <div className="relative">
-                <input
-                  value={aircraft}
-                  onChange={(e) => {
-                    setAircraft(e.target.value);
-                    setShowAircraftSuggestions(true);
-                  }}
-                  onFocus={() =>
-                    setShowAircraftSuggestions(true)
-                  }
-                  onBlur={() =>
-                    setTimeout(
-                      () => setShowAircraftSuggestions(false),
-                      200
-                    )
-                  }
-                  placeholder="Aircraft Registration"
-                  className="w-full border rounded-xl px-4 py-3 bg-slate-50"
-                />
-
-                {showAircraftSuggestions && (
-                  <div className="absolute z-20 w-full mt-1 bg-white border rounded-xl shadow-lg max-h-60 overflow-y-auto">
-                    {filteredAircraftOptions.map((plane) => (
-                      <button
-                        key={plane}
-                        type="button"
-                        onMouseDown={() => {
-                          setAircraft(plane);
-                          setShowAircraftSuggestions(false);
-                        }}
-                        className="w-full text-left px-4 py-3 hover:bg-blue-100"
-                      >
-                        {plane}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <select
-                value={movementType}
-                onChange={(e) =>
-                  setMovementType(e.target.value)
-                }
-                className="w-full border rounded-xl px-4 py-3 bg-slate-50"
-              >
-                {movementTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
-
-              <input
-                value={fromStand}
-                onChange={(e) =>
-                  setFromStand(e.target.value.toUpperCase())
-                }
-                placeholder="From Stand"
-                list="from-stands"
-                className="w-full border rounded-xl px-4 py-3 bg-slate-50"
-              />
-
-              <datalist id="from-stands">
-                {airportStands.MAN.map((stand) => (
-                  <option key={stand} value={stand} />
-                ))}
-              </datalist>
-
-              <input
-                value={toStand}
-                onChange={(e) =>
-                  setToStand(e.target.value.toUpperCase())
-                }
-                placeholder="To Stand"
-                list="to-stands"
-                className="w-full border rounded-xl px-4 py-3 bg-slate-50"
-              />
-
-              <datalist id="to-stands">
-                {airportStands.MAN.map((stand) => (
-                  <option key={stand} value={stand} />
-                ))}
-              </datalist>
-
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Movement Notes"
-                rows={3}
-                className="w-full border rounded-xl px-4 py-3 bg-slate-50 resize-none"
-              />
-
-              <button
-                onClick={addLogEntry}
-                className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold"
-              >
-                Add Movement
-              </button>
-
-              <button
-                onClick={exportLogbook}
-                className="w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold"
-              >
-                Export CSV
-              </button>
-            </div>
-
-            {/* Records */}
-            <div className="bg-white rounded-2xl shadow-lg p-4">
-
-              <div className="flex flex-col gap-4 mb-4">
-
-                <div className="flex justify-between items-center flex-wrap gap-3">
-
-                  <h2 className="text-2xl font-bold text-slate-800">
-                    Movement Records
-                  </h2>
-
-                  <div className="text-sm text-slate-500">
-                    {typeFilteredHistory.length} entries
-                  </div>
-
-                </div>
-
-                <div className="flex gap-2 flex-wrap">
-
-                  <button
-                    onClick={() => {
-                      setActiveTab("ALL");
-                      setCurrentPage(1);
-                    }}
-                    className={`px-4 py-2 rounded-xl font-semibold ${
-                      activeTab === "ALL"
-                        ? "bg-blue-600 text-white"
-                        : "bg-slate-100"
-                    }`}
-                  >
-                    All
-                  </button>
-
-                  {tuiAircraftTypes.map((type) => (
-                    <button
-                      key={type}
-                      onClick={() => {
-                        setActiveTab(type);
-                        setCurrentPage(1);
-                      }}
-                      className={`px-4 py-2 rounded-xl font-semibold ${
-                        activeTab === type
-                          ? "bg-blue-600 text-white"
-                          : "bg-slate-100"
-                      }`}
-                    >
-                      {type}
-                    </button>
-                  ))}
-
-                </div>
-
-                <input
-                  value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  placeholder="Search records..."
-                  className="w-full border rounded-xl px-4 py-3 bg-slate-50"
-                />
-
-              </div>
-
-              <div className="space-y-3 max-h-[700px] overflow-y-auto">
-
-                {paginatedHistory.length === 0 && (
-                  <div className="text-center text-slate-500 py-10">
-                    No movement records found.
-                  </div>
-                )}
-
-                {paginatedHistory.map((item, index) => (
-
-                  <div
-                    key={`${item.aircraft}-${index}`}
-                    className="border rounded-xl p-4 bg-slate-50"
-                  >
-
-                    <div className="flex justify-between gap-3">
-
-                      <div>
-                        <div className="font-bold text-slate-800">
-                          {item.aircraft}
-                        </div>
-
-                        <div className="text-sm text-blue-600 font-medium">
-                          {item.movementType}
-                        </div>
-
-                        <div className="text-sm text-slate-500">
-                          {item.date} • {item.time}
-                        </div>
-                      </div>
-
-                      <div className="text-right">
-
-                        <div className="text-sm text-slate-500">
-                          Stand Move
-                        </div>
-
-                        <div className="font-semibold">
-                          {item.fromStand} → {item.toStand}
-                        </div>
-
-                      </div>
-
-                    </div>
-
-                    {item.notes && (
-                      <div className="mt-3 text-sm text-slate-700 bg-white rounded-lg p-3 border">
-                        {item.notes}
-                      </div>
-                    )}
-
-                    <button
-                      onClick={() => deleteEntry(index)}
-                      className="w-full mt-3 bg-red-500 text-white py-2 rounded-lg font-semibold"
-                    >
-                      Delete
-                    </button>
-
-                  </div>
-
-                ))}
-
-              </div>
-
-              <div className="flex justify-center gap-2 mt-4 flex-wrap">
-
-                <button
-                  onClick={() =>
-                    setCurrentPage((prev) =>
-                      Math.max(prev - 1, 1)
-                    )
-                  }
-                  className="px-4 py-2 rounded-xl border bg-white"
-                >
-                  Previous
-                </button>
-
-                {Array.from(
-                  { length: totalPages },
-                  (_, i) => i + 1
-                ).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`px-4 py-2 rounded-xl font-semibold ${
-                      currentPage === page
-                        ? "bg-blue-600 text-white"
-                        : "bg-white border"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
-
-                <button
-                  onClick={() =>
-                    setCurrentPage((prev) =>
-                      Math.min(prev + 1, totalPages)
-                    )
-                  }
-                  className="px-4 py-2 rounded-xl border bg-white"
-                >
-                  Next
-                </button>
-
-              </div>
-
-            </div>
+            <RecordsPanel
+              paginatedHistory={paginatedHistory}
+              deleteEntry={deleteEntry}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              tuiAircraftTypes={tuiAircraftTypes}
+              totalPages={totalPages}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              typeFilteredHistory={typeFilteredHistory}
+            />
 
           </div>
-
         </div>
       </div>
     </div>
   );
 }
+```
+
+---
+
+# components/Header.jsx
+
+```jsx
+export default function Header({ fleetCount }) {
+  return (
+    <div className="bg-white rounded-2xl shadow-lg p-4 flex justify-between items-center">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-800">
+          MAN Aircraft Movement Logbook
+        </h1>
+
+        <div className="text-sm text-slate-500 mt-1">
+          {fleetCount} aircraft loaded
+        </div>
+      </div>
+
+      <div className="text-sm font-medium text-slate-600">
+        {new Date().toLocaleTimeString()}
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+# components/StatsCards.jsx
+
+```jsx
+export default function StatsCards({ stats }) {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+      <div className="bg-white rounded-2xl shadow-lg p-4">
+        <div className="text-sm text-slate-500 mb-1">
+          Total Movements
+        </div>
+
+        <div className="text-4xl font-bold text-blue-600">
+          {stats.totalMovements}
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-lg p-4">
+        <div className="text-sm text-slate-500 mb-3">
+          Top Aircraft
+        </div>
+
+        <div className="space-y-2 text-sm">
+          {stats.topAircraft.map(([name, count]) => (
+            <div key={name} className="flex justify-between">
+              <span className="truncate mr-2">{name}</span>
+              <span className="font-bold text-blue-600">{count}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-lg p-4">
+        <div className="text-sm text-slate-500 mb-3">
+          Most Used Stands
+        </div>
+
+        <div className="space-y-2 text-sm">
+          {stats.topStands.map(([name, count]) => (
+            <div key={name} className="flex justify-between">
+              <span>{name}</span>
+              <span className="font-bold text-emerald-600">{count}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+    </div>
+  );
+}
+```
+
+---
+
+# components/FleetManager.jsx
+
+```jsx
+export default function FleetManager({
+  newReg,
+  setNewReg,
+  newType,
+  setNewType,
+  tuiAircraftTypes,
+  addAircraftToFleet,
+}) {
+  return (
+    <div className="bg-white rounded-2xl shadow-lg p-4 space-y-4">
+
+      <h2 className="text-xl font-bold text-slate-800">
+        Fleet Manager
+      </h2>
+
+      <input
+        value={newReg}
+        onChange={(e) =>
+          setNewReg(e.target.value.toUpperCase())
+        }
+        placeholder="Aircraft Registration"
+        className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+      />
+
+      <select
+        value={newType}
+        onChange={(e) => setNewType(e.target.value)}
+        className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+      >
+        <option value="">Select Aircraft Type</option>
+
+        {tuiAircraftTypes.map((type) => (
+          <option key={type} value={type}>
+            {type}
+          </option>
+        ))}
+      </select>
+
+      <button
+        onClick={addAircraftToFleet}
+        className="w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold"
+      >
+        Add Aircraft
+      </button>
+
+    </div>
+  );
+}
+```
+
+---
+
+# components/MovementForm.jsx
+
+```jsx
+export default function MovementForm({
+  movementDate,
+  setMovementDate,
+  aircraft,
+  setAircraft,
+  movementType,
+  setMovementType,
+  fromStand,
+  setFromStand,
+  toStand,
+  setToStand,
+  notes,
+  setNotes,
+  movementTypes,
+  airportStands,
+  filteredAircraftOptions,
+  showAircraftSuggestions,
+  setShowAircraftSuggestions,
+  addLogEntry,
+  exportLogbook,
+}) {
+  return (
+    <div className="bg-white rounded-2xl shadow-lg p-4 space-y-4">
+      <h2 className="text-xl font-bold text-slate-800">
+        New Movement
+      </h2>
+
+      <input
+        type="date"
+        value={movementDate}
+        onChange={(e) => setMovementDate(e.target.value)}
+        className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+      />
+
+      <div className="relative">
+        <input
+          value={aircraft}
+          onChange={(e) => {
+            setAircraft(e.target.value);
+            setShowAircraftSuggestions(true);
+          }}
+          onFocus={() => setShowAircraftSuggestions(true)}
+          onBlur={() =>
+            setTimeout(() => setShowAircraftSuggestions(false), 200)
+          }
+          placeholder="Aircraft Registration"
+          className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+        />
+
+        {showAircraftSuggestions && (
+          <div className="absolute z-20 w-full mt-1 bg-white border rounded-xl shadow-lg max-h-60 overflow-y-auto">
+            {filteredAircraftOptions.map((plane) => (
+              <button
+                key={plane}
+                type="button"
+                onMouseDown={() => {
+                  setAircraft(plane);
+                  setShowAircraftSuggestions(false);
+                }}
+                className="w-full text-left px-4 py-3 hover:bg-blue-100"
+              >
+                {plane}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <select
+        value={movementType}
+        onChange={(e) => setMovementType(e.target.value)}
+        className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+      >
+        {movementTypes.map((type) => (
+          <option key={type} value={type}>
+            {type}
+          </option>
+        ))}
+      </select>
+
+      <input
+        value={fromStand}
+        onChange={(e) =>
+          setFromStand(e.target.value.toUpperCase())
+        }
+        placeholder="From Stand"
+        list="from-stands"
+        className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+      />
+
+      <datalist id="from-stands">
+        {airportStands.MAN.map((stand) => (
+          <option key={stand} value={stand} />
+        ))}
+      </datalist>
+
+      <input
+        value={toStand}
+        onChange={(e) =>
+          setToStand(e.target.value.toUpperCase())
+        }
+        placeholder="To Stand"
+        list="to-stands"
+        className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+      />
+
+      <datalist id="to-stands">
+        {airportStands.MAN.map((stand) => (
+          <option key={stand} value={stand} />
+        ))}
+      </datalist>
+
+      <textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        placeholder="Movement Notes"
+        rows={3}
+        className="w-full border rounded-xl px-4 py-3 bg-slate-50 resize-none"
+      />
+
+      <button
+        onClick={addLogEntry}
+        className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold"
+      >
+        Add Movement
+      </button>
+
+      <button
+        onClick={exportLogbook}
+        className="w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold"
+      >
+        Export CSV
+      </button>
+    </div>
+  );
+}
+```
+
+---
+
+# components/RecordsPanel.jsx
+
+```jsx
+export default function RecordsPanel({
+  paginatedHistory,
+  deleteEntry,
+  searchTerm,
+  setSearchTerm,
+  activeTab,
+  setActiveTab,
+  tuiAircraftTypes,
+  totalPages,
+  currentPage,
+  setCurrentPage,
+  typeFilteredHistory,
+}) {
+  return (
+    <div className="bg-white rounded-2xl shadow-lg p-4">
+
+      <div className="flex flex-col gap-4 mb-4">
+
+        <div className="flex justify-between items-center flex-wrap gap-3">
+          <h2 className="text-2xl font-bold text-slate-800">
+            Movement Records
+          </h2>
+
+          <div className="text-sm text-slate-500">
+            {typeFilteredHistory.length} entries
+          </div>
+        </div>
+
+        <div className="flex gap-2 flex-wrap">
+
+          <button
+            onClick={() => {
+              setActiveTab("ALL");
+              setCurrentPage(1);
+            }}
+            className={`px-4 py-2 rounded-xl font-semibold ${
+              activeTab === "ALL"
+                ? "bg-blue-600 text-white"
+                : "bg-slate-100"
+            }`}
+          >
+            All
+          </button>
+
+          {tuiAircraftTypes.map((type) => (
+            <button
+              key={type}
+              onClick={() => {
+                setActiveTab(type);
+                setCurrentPage(1);
+              }}
+              className={`px-4 py-2 rounded-xl font-semibold ${
+                activeTab === type
+                  ? "bg-blue-600 text-white"
+                  : "bg-slate-100"
+              }`}
+            >
+              {type}
+            </button>
+          ))}
+
+        </div>
+
+        <input
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1);
+          }}
+          placeholder="Search records..."
+          className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+        />
+
+      </div>
+
+      <div className="space-y-3 max-h-[700px] overflow-y-auto">
+
+        {paginatedHistory.map((item, index) => (
+          <div
+            key={`${item.aircraft}-${index}`}
+            className="border rounded-xl p-4 bg-slate-50"
+          >
+
+            <div className="flex justify-between gap-3">
+
+              <div>
+                <div className="font-bold text-slate-800">
+                  {item.aircraft}
+                </div>
+
+                <div className="text-sm text-blue-600 font-medium">
+                  {item.movementType}
+                </div>
+
+                <div className="text-sm text-slate-500">
+                  {item.date} • {item.time}
+                </div>
+              </div>
+
+              <div className="text-right">
+                <div className="text-sm text-slate-500">
+                  Stand Move
+                </div>
+
+                <div className="font-semibold">
+                  {item.fromStand} → {item.toStand}
+                </div>
+              </div>
+
+            </div>
+
+            {item.notes && (
+              <div className="mt-3 text-sm text-slate-700 bg-white rounded-lg p-3 border">
+                {item.notes}
+              </div>
+            )}
+
+            <button
+              onClick={() => deleteEntry(index)}
+              className="w-full mt-3 bg-red-500 text-white py-2 rounded-lg font-semibold"
+            >
+              Delete
+            </button>
+
+          </div>
+        ))}
+
+      </div>
+
+      <div className="flex justify-center gap-2 mt-4 flex-wrap">
+
+        <button
+          onClick={() =>
+            setCurrentPage((prev) => Math.max(prev - 1, 1))
+          }
+          className="px-4 py-2 rounded-xl border bg-white"
+        >
+          Previous
+        </button>
+
+        {Array.from(
+          { length: totalPages },
+          (_, i) => i + 1
+        ).map((page) => (
+          <button
+            key={page}
+            onClick={() => setCurrentPage(page)}
+            className={`px-4 py-2 rounded-xl font-semibold ${
+              currentPage === page
+                ? "bg-blue-600 text-white"
+                : "bg-white border"
+            }`}
+          >
+            {page}
+          </button>
+        ))}
+
+        <button
+          onClick={() =>
+            setCurrentPage((prev) =>
+              Math.min(prev + 1, totalPages)
+            )
+          }
+          className="px-4 py-2 rounded-xl border bg-white"
+        >
+          Next
+        </button>
+
+      </div>
+
+    </div>
+  );
+}
+```
