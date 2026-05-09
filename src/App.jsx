@@ -21,6 +21,7 @@ export default function AircraftMovementLogbook() {
   ];
 
   const initialFleet = [
+    "G-TUMM - Boeing 737 MAX 8",
     "G-TUIA - Boeing 787-8 Dreamliner",
     "G-TUIB - Boeing 787-8 Dreamliner",
     "G-TUIC - Boeing 787-8 Dreamliner",
@@ -292,8 +293,8 @@ export default function AircraftMovementLogbook() {
   }, [history]);
 
   return (
-    <div className={darkMode ? "dark min-h-screen bg-slate-900" : "min-h-screen bg-slate-100"}>
-      <div className="min-h-screen bg-slate-100 dark:bg-slate-900 p-2 sm:p-4 lg:p-6 transition-colors">
+    <div className={darkMode ? "dark min-h-screen bg-slate-900" : "min-h-screen bg-sky-100"}>
+      <div className="min-h-screen bg-sky-100 dark:bg-slate-900 p-2 sm:p-4 lg:p-6 transition-colors">
         <div className="max-w-7xl mx-auto space-y-3 sm:space-y-6">
           <div className="flex justify-end">
             <button
@@ -304,7 +305,7 @@ export default function AircraftMovementLogbook() {
             </button>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-3 sm:p-5 transition-colors">
+          <div className="bg-sky-50 dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-3 sm:p-5 transition-colors">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-slate-800 dark:text-white">
                 Monthly Movement Trend
@@ -337,7 +338,7 @@ export default function AircraftMovementLogbook() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-3 sm:p-5 transition-colors">
+            <div className="bg-sky-50 dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-3 sm:p-5 transition-colors">
               <div className="text-sm text-slate-500 dark:text-slate-300 mb-2">
                 Total Movements
               </div>
@@ -346,7 +347,7 @@ export default function AircraftMovementLogbook() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-3 sm:p-5 transition-colors">
+            <div className="bg-sky-50 dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-3 sm:p-5 transition-colors">
               <div className="text-sm text-slate-500 dark:text-slate-300 mb-3">
                 Top Aircraft
               </div>
@@ -370,7 +371,7 @@ export default function AircraftMovementLogbook() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-3 sm:p-5 transition-colors">
+            <div className="bg-sky-50 dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-3 sm:p-5 transition-colors">
               <div className="text-sm text-slate-500 dark:text-slate-300 mb-3">
                 Most Used Stands
               </div>
@@ -396,7 +397,7 @@ export default function AircraftMovementLogbook() {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-3 sm:p-6 space-y-4 transition-colors">
+            <div className="bg-sky-50 dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-3 sm:p-6 space-y-4 transition-colors">
               <h2 className="text-lg sm:text-2xl font-bold text-slate-800 dark:text-white">
                 Fleet Manager
               </h2>
@@ -423,7 +424,7 @@ export default function AircraftMovementLogbook() {
               </button>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-3 sm:p-6 space-y-4 transition-colors">
+            <div className="bg-sky-50 dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-3 sm:p-6 space-y-4 transition-colors">
               <h2 className="text-lg sm:text-2xl font-bold text-slate-800 dark:text-white">
                 New Movement Entry
               </h2>
@@ -461,7 +462,7 @@ export default function AircraftMovementLogbook() {
                 />
 
                 {showAircraftSuggestions && filteredAircraftOptions.length > 0 && (
-                  <div className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl shadow-xl max-h-60 overflow-y-auto">
+                  <div className="absolute z-20 w-full mt-1 bg-sky-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl shadow-xl max-h-60 overflow-y-auto">
                     {filteredAircraftOptions.map((plane) => (
                       <button
                         key={plane}
@@ -553,7 +554,7 @@ export default function AircraftMovementLogbook() {
               </button>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-3 sm:p-6 transition-colors">
+            <div className="bg-sky-50 dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-3 sm:p-6 transition-colors">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg sm:text-2xl font-bold text-slate-800 dark:text-white">
                   Movement Records
@@ -578,7 +579,7 @@ export default function AircraftMovementLogbook() {
                 />
 
                 {showSearchSuggestions && filteredAircraftSuggestions.length > 0 && (
-                  <div className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl shadow-xl max-h-60 overflow-y-auto">
+                  <div className="absolute z-20 w-full mt-1 bg-sky-50 dark:bg-slate-800 border dark:border-slate-700 rounded-2xl shadow-xl max-h-60 overflow-y-auto">
                     {filteredAircraftSuggestions.map((plane) => (
                       <button
                         key={plane}
@@ -727,7 +728,7 @@ export default function AircraftMovementLogbook() {
                   filteredHistory.map((item, index) => (
                     <div
                       key={`${item.aircraft}-${index}`}
-                      className="border dark:border-slate-700 rounded-xl sm:rounded-2xl p-2 sm:p-4 bg-slate-50 dark:bg-slate-900 transition-colors"
+                      className="border dark:border-slate-700 rounded-xl sm:rounded-2xl p-2 sm:p-4 bg-sky-50 dark:bg-slate-900 transition-colors"
                     >
                       <div className="flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4">
                         <div>
@@ -756,7 +757,7 @@ export default function AircraftMovementLogbook() {
                       </div>
 
                       {item.notes && (
-                        <div className="mt-2 sm:mt-4 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-xl p-2 sm:p-3 text-xs sm:text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap transition-colors">
+                        <div className="mt-2 sm:mt-4 bg-sky-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl p-2 sm:p-3 text-xs sm:text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap transition-colors">
                           {item.notes}
                         </div>
                       )}
@@ -781,7 +782,7 @@ export default function AircraftMovementLogbook() {
                 )}
               </div>
 
-              <div className="mt-6 bg-blue-50 dark:bg-slate-900 border border-blue-100 dark:border-slate-700 rounded-2xl p-4 transition-colors">
+              <div className="mt-6 bg-sky-100 dark:bg-slate-900 border border-blue-100 dark:border-slate-700 rounded-2xl p-4 transition-colors">
                 <h3 className="font-semibold text-slate-800 dark:text-white mb-2">
                   Test Cases
                 </h3>
