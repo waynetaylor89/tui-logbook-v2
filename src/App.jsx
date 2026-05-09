@@ -313,12 +313,28 @@ export default function AircraftMovementLogbook() {
       <div className="min-h-screen bg-slate-100 dark:bg-slate-900 sm:p-6 p-3 transition-colors">
         <div className="max-w-7xl mx-auto sm:space-y-6 space-y-3">
           <div className="flex justify-end">
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className="bg-slate-800 text-white sm:px-4 px-3 sm:py-2 py-1 rounded-xl text-sm sm:text-base"
-            >
-              {darkMode ? "Light Mode" : "Dark Mode"}
-            </button>
+            <div className="flex gap-1 bg-slate-200 dark:bg-slate-700 rounded-2xl p-1">
+              <button
+                onClick={() => setDarkMode(false)}
+                className={`sm:px-4 px-3 sm:py-2 py-1 rounded-lg font-semibold text-sm sm:text-base transition-all ${
+                  !darkMode
+                    ? "bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-md"
+                    : "text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100"
+                }`}
+              >
+                ☀️ Light
+              </button>
+              <button
+                onClick={() => setDarkMode(true)}
+                className={`sm:px-4 px-3 sm:py-2 py-1 rounded-lg font-semibold text-sm sm:text-base transition-all ${
+                  darkMode
+                    ? "bg-slate-800 text-white shadow-md"
+                    : "text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100"
+                }`}
+              >
+                🌙 Dark
+              </button>
+            </div>
           </div>
 
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
