@@ -300,7 +300,7 @@ export default function AircraftMovementLogbook() {
   }, [history]);
 
   return (
-    <div className={darkMode ? "dark min-h-screen bg-slate-900" : "min-h-screen bg-sky-100"}>
+    <div className={darkMode ? "dark min-h-screen bg-slate-900" : "min-h-screen bg-sky-200"}>
       <div className="min-h-screen bg-white dark:bg-slate-900 p-2 sm:p-4 lg:p-6 transition-colors">
         <div className="max-w-7xl mx-auto space-y-3 sm:space-y-6">
           <div className="flex justify-end">
@@ -499,31 +499,37 @@ export default function AircraftMovementLogbook() {
                 </div>
               )}
 
-              <select
-                value={fromStand}
-                onChange={(e) => setFromStand(e.target.value)}
-                className="w-full border dark:border-slate-600 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
-              >
-                <option value="">From Stand</option>
-                {airportStands[airport].map((stand) => (
-                  <option key={stand} value={stand}>
-                    {stand}
-                  </option>
-                ))}
-              </select>
+              <div className="space-y-2">
+                <input
+                  value={fromStand}
+                  onChange={(e) => setFromStand(e.target.value.toUpperCase())}
+                  placeholder="From Stand"
+                  list="from-stands"
+                  className="w-full border dark:border-slate-600 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
+                />
 
-              <select
-                value={toStand}
-                onChange={(e) => setToStand(e.target.value)}
-                className="w-full border dark:border-slate-600 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
-              >
-                <option value="">To Stand</option>
-                {airportStands[airport].map((stand) => (
-                  <option key={stand} value={stand}>
-                    {stand}
-                  </option>
-                ))}
-              </select>
+                <datalist id="from-stands">
+                  {airportStands[airport].map((stand) => (
+                    <option key={stand} value={stand} />
+                  ))}
+                </datalist>
+              </div>
+
+              <div className="space-y-2">
+                <input
+                  value={toStand}
+                  onChange={(e) => setToStand(e.target.value.toUpperCase())}
+                  placeholder="To Stand"
+                  list="to-stands"
+                  className="w-full border dark:border-slate-600 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
+                />
+
+                <datalist id="to-stands">
+                  {airportStands[airport].map((stand) => (
+                    <option key={stand} value={stand} />
+                  ))}
+                </datalist>
+              </div>
 
               <select
                 value={movementType}
