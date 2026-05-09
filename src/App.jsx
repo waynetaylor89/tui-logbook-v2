@@ -93,6 +93,8 @@ export default function AircraftMovementLogbook() {
     return savedFleet ? JSON.parse(savedFleet) : initialFleet;
   });
   const [aircraft, setAircraft] = useState("");
+  const [showAircraftDropdown, setShowAircraftDropdown] = useState(false);
+  const [editingShowAircraftDropdown, setEditingShowAircraftDropdown] = useState(false);
   const [fromStand, setFromStand] = useState("");
   const [toStand, setToStand] = useState("");
   const [notes, setNotes] = useState("");
@@ -139,6 +141,13 @@ export default function AircraftMovementLogbook() {
   }, [darkMode]);
 
   const is7878Selected = aircraft.includes("787-8");
+
+  const filteredAircraft = useMemo(() => {
+    if (!aircraft.trim()) return fleet;
+    return fleet.filter((plane) =>
+      plane.toLowerCase().includes(aircraft.toLowerCase())
+    );
+  }, [aircraft, fleet]);
 
   const filteredHistory = useMemo(() => {
     return history.filter((entry) => {
@@ -425,18 +434,35 @@ export default function AircraftMovementLogbook() {
                 />
               </div>
 
-              <input
-                list="aircraft-list"
-                value={aircraft}
-                onChange={(e) => setAircraft(e.target.value)}
-                placeholder="Select Aircraft"
-                className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl sm:px-4 px-3 sm:py-3 py-2 text-sm transition-colors"
-              />
-              <datalist id="aircraft-list">
-                {fleet.map((plane) => (
-                  <option key={plane} value={plane} />
-                ))}
-              </datalist>
+              <div className="relative">
+                <input
+                  value={aircraft}
+                  onChange={(e) => {
+                    setAircraft(e.target.value);
+                    setShowAircraftDropdown(true);
+                  }}
+                  onFocus={() => setShowAircraftDropdown(true)}
+                  onBlur={() => setTimeout(() => setShowAircraftDropdown(false), 200)}
+                  placeholder="Select Aircraft"
+                  className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl sm:px-4 px-3 sm:py-3 py-2 text-sm transition-colors"
+                />
+                {showAircraftDropdown && filteredAircraft.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-700 border dark:border-slate-600 rounded-2xl shadow-lg max-h-[250px] overflow-y-auto">
+                    {filteredAircraft.map((plane) => (
+                      <div
+                        key={plane}
+                        onClick={() => {
+                          setAircraft(plane);
+                          setShowAircraftDropdown(false);
+                        }}
+                        className="px-4 py-2 hover:bg-blue-100 dark:hover:bg-slate-600 cursor-pointer text-slate-800 dark:text-white text-sm transition-colors"
+                      >
+                        {plane}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               {is7878Selected && (
                 <div className="bg-amber-100 border border-amber-300 text-amber-900 rounded-2xl sm:p-4 p-3 sm:text-sm text-xs font-semibold">
@@ -525,15 +551,35 @@ export default function AircraftMovementLogbook() {
                       Edit Movement Record
                     </h3>
                     <div className="space-y-3">
-                      <input
-                        list="aircraft-list"
-                        value={editingData.aircraft}
-                        onChange={(e) =>
-                          setEditingData({ ...editingData, aircraft: e.target.value })
-                        }
-                        placeholder="Select Aircraft"
-                        className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl sm:px-4 px-3 sm:py-3 py-2 text-sm transition-colors"
-                      />
+                      <div className="relative">
+                        <input
+                          value={editingData.aircraft}
+                          onChange={(e) => {
+                            setEditingData({ ...editingData, aircraft: e.target.value });
+                            setEditingShowAircraftDropdown(true);
+                          }}
+                          onFocus={() => setEditingShowAircraftDropdown(true)}
+                          onBlur={() => setTimeout(() => setEditingShowAircraftDropdown(false), 200)}
+                          placeholder="Select Aircraft"
+                          className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl sm:px-4 px-3 sm:py-3 py-2 text-sm transition-colors"
+                        />
+                        {editingShowAircraftDropdown && filteredAircraft.length > 0 && (
+                          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-700 border dark:border-slate-600 rounded-2xl shadow-lg max-h-[250px] overflow-y-auto">
+                            {filteredAircraft.map((plane) => (
+                              <div
+                                key={plane}
+                                onClick={() => {
+                                  setEditingData({ ...editingData, aircraft: plane });
+                                  setEditingShowAircraftDropdown(false);
+                                }}
+                                className="px-4 py-2 hover:bg-blue-100 dark:hover:bg-slate-600 cursor-pointer text-slate-800 dark:text-white text-sm transition-colors"
+                              >
+                                {plane}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                       <div className="grid sm:grid-cols-2 gap-3">
                         <select
                           value={editingData.airport}
