@@ -63,6 +63,10 @@ export default function AircraftMovementLogbook() {
   const [airport, setAirport] = useState("MAN");
   const [movementType, setMovementType] = useState("Tow");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
   const [darkMode, setDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem("aircraft-logbook-theme");
     return savedTheme ? JSON.parse(savedTheme) : false;
@@ -158,6 +162,7 @@ export default function AircraftMovementLogbook() {
       return;
     }
 
+    const dateObj = new Date(selectedDate);
     const entry = {
       aircraft,
       airport,
@@ -165,7 +170,7 @@ export default function AircraftMovementLogbook() {
       fromStand,
       toStand,
       notes,
-      date: new Date().toLocaleDateString(),
+      date: dateObj.toLocaleDateString(),
       time: new Date().toLocaleTimeString(),
     };
 
@@ -176,6 +181,8 @@ export default function AircraftMovementLogbook() {
     setToStand("");
     setNotes("");
     setMovementType("Tow");
+    const today = new Date();
+    setSelectedDate(today.toISOString().split('T')[0]);
   };
 
   const exportLogbook = () => {
@@ -328,17 +335,26 @@ export default function AircraftMovementLogbook() {
                 New Movement Entry
               </h2>
 
-              <select
-                value={airport}
-                onChange={(e) => setAirport(e.target.value)}
-                className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl sm:px-4 px-3 sm:py-3 py-2 text-sm transition-colors"
-              >
-                {airports.map((airportCode) => (
-                  <option key={airportCode} value={airportCode}>
-                    {airportCode}
-                  </option>
-                ))}
-              </select>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <select
+                  value={airport}
+                  onChange={(e) => setAirport(e.target.value)}
+                  className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl sm:px-4 px-3 sm:py-3 py-2 text-sm transition-colors"
+                >
+                  {airports.map((airportCode) => (
+                    <option key={airportCode} value={airportCode}>
+                      {airportCode}
+                    </option>
+                  ))}
+                </select>
+
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl sm:px-4 px-3 sm:py-3 py-2 text-sm transition-colors"
+                />
+              </div>
 
               <input
                 list="aircraft-list"
