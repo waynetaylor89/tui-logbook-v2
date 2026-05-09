@@ -86,11 +86,12 @@ export default function AircraftMovementLogbook() {
     "G-TUIM - Boeing 787-9 Dreamliner",
     "G-TUIN - Boeing 787-9 Dreamliner",
     "G-TUIO - Boeing 787-9 Dreamliner",
-  ];
+  ].sort();
 
   const [fleet, setFleet] = useState(() => {
     const savedFleet = localStorage.getItem("aircraft-logbook-fleet");
-    return savedFleet ? JSON.parse(savedFleet) : initialFleet;
+    const fleetData = savedFleet ? JSON.parse(savedFleet) : initialFleet;
+    return Array.from(new Set(fleetData)).sort();
   });
   const [aircraft, setAircraft] = useState("");
   const [showAircraftDropdown, setShowAircraftDropdown] = useState(false);
