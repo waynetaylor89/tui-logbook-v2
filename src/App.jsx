@@ -86,6 +86,28 @@ export default function AircraftMovementLogbook() {
     "G-TUIM - Boeing 787-9 Dreamliner",
     "G-TUIN - Boeing 787-9 Dreamliner",
     "G-TUIO - Boeing 787-9 Dreamliner",
+    "G-TUIH - Boeing 787-8 Dreamliner",
+"G-TUII - Boeing 787-8 Dreamliner",
+"G-TUIN - Boeing 787-9 Dreamliner",
+"G-TUIO - Boeing 787-9 Dreamliner",
+
+"G-TUMA - Boeing 737 MAX 8",
+"G-TUMB - Boeing 737 MAX 8",
+"G-TUMC - Boeing 737 MAX 8",
+"G-TUMD - Boeing 737 MAX 8",
+"G-TUMG - Boeing 737 MAX 8",
+"G-TUMH - Boeing 737 MAX 8",
+"G-TUMK - Boeing 737 MAX 8",
+"G-TUML - Boeing 737 MAX 8",
+"G-TUMM - Boeing 737 MAX 8",
+"G-TUMN - Boeing 737 MAX 8",
+"G-TUMO - Boeing 737 MAX 8",
+"G-TUMP - Boeing 737 MAX 8",
+"G-TUMS - Boeing 737 MAX 8",
+"G-TUMT - Boeing 737 MAX 8",
+
+"G-TUPC - Boeing 737 MAX 8",
+"G-TUPH - Boeing 737 MAX 8",
   ].sort();
 
   const [fleet, setFleet] = useState(() => {
