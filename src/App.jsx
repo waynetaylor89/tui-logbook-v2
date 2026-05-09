@@ -84,6 +84,13 @@ export default function AircraftMovementLogbook() {
     return savedTheme ? JSON.parse(savedTheme) : false;
   });
   const [newReg, setNewReg] = useState("");
+  const tuiAircraftTypes = [
+    "Boeing 737-800",
+    "Boeing 737 MAX 8",
+    "Boeing 787-8 Dreamliner",
+    "Boeing 787-9 Dreamliner",
+  ];
+
   const [newType, setNewType] = useState("");
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingData, setEditingData] = useState(null);
@@ -409,12 +416,18 @@ export default function AircraftMovementLogbook() {
                 className="w-full border dark:border-slate-600 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
               />
 
-              <input
+              <select
                 value={newType}
                 onChange={(e) => setNewType(e.target.value)}
-                placeholder="Aircraft Type"
-                className="w-full border dark:border-slate-600 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
-              />
+                className="w-full border dark:border-slate-600 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 text-sm transition-colors"
+              >
+                <option value="">Select Aircraft Type</option>
+                {tuiAircraftTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
 
               <button
                 onClick={addAircraftToFleet}
