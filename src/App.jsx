@@ -222,16 +222,15 @@ export default function AircraftMovementLogbook() {
     setMovementType("Tow");
   };
 
-  const deleteEntry = (index) => {
-    if (window.confirm("Delete this movement?")) {
-      setHistory(history.filter((_, i) => i !== index));
-    }
-  };
+ const deleteEntry = (index) => {
+  if (window.confirm("Delete this movement?")) {
+    setHistory(history.filter((_, i) => i !== index));
+  }
+};
 
-  const exportLogbook = () => {
-    exportLogbookCSV(typeFilteredHistory);
-  };
-
+const exportLogbook = () => {
+  exportLogbookCSV(typeFilteredHistory);
+};
   return (
     <div className="min-h-screen bg-sky-200">
       <div className="min-h-screen bg-sky-100 p-3 lg:p-6">
@@ -239,9 +238,25 @@ export default function AircraftMovementLogbook() {
 
           <Header fleetCount={fleet.length} />
 
-          <StatsCards stats={stats} />
+{/* Stats Section */}
+<div className="space-y-2">
 
-          <div className="grid lg:grid-cols-3 gap-4">
+  <div className="flex items-center justify-between">
+    <h2 className="text-2xl font-bold text-slate-800">
+      Statistics Overview
+    </h2>
+
+    <div className="text-sm text-slate-500">
+      Live movement tracking
+    </div>
+  </div>
+
+  <StatsCards stats={stats} />
+
+</div>
+
+{/* Main Grid */}
+<div className="grid lg:grid-cols-3 gap-4">
 
             <FleetManager
               newReg={newReg}
