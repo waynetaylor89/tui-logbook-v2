@@ -100,6 +100,9 @@ export default function AircraftMovementLogbook() {
 
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingData, setEditingData] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+const recordsPerPage = 10;
 
   useEffect(() => {
     localStorage.setItem(
@@ -151,6 +154,15 @@ export default function AircraftMovementLogbook() {
         .includes(searchTerm.toLowerCase());
     });
   }, [history, searchTerm]);
+ const totalPages = Math.max(
+  1,
+  Math.ceil(filteredHistory.length / recordsPerPage)
+);
+
+const paginatedHistory = filteredHistory.slice(
+  (currentPage - 1) * recordsPerPage,
+  currentPage * recordsPerPage
+);
 
   const stats = useMemo(() => {
     const aircraftCounts = {};
@@ -183,7 +195,7 @@ export default function AircraftMovementLogbook() {
     const monthly = {};
 
     history.forEach((entry) => {
-      const month = entry.date.split("/").slice(1).join("/");
+      const month = entry.date.slice(0, 7);
       monthly[month] = (monthly[month] || 0) + 1;
     });
 
@@ -217,8 +229,7 @@ export default function AircraftMovementLogbook() {
       return;
     }
 
-    const selectedDate = new Date(movementDate);
-
+    
     const entry = {
       aircraft,
       airport,
@@ -226,7 +237,7 @@ export default function AircraftMovementLogbook() {
       fromStand,
       toStand,
       notes,
-      date: selectedDate.toLocaleDateString(),
+      date: movementDate,
       time: new Date().toLocaleTimeString(),
     };
 
@@ -339,6 +350,7 @@ export default function AircraftMovementLogbook() {
 
           {/* Stats */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid lg:grid-cols-3 gap-4"></div>
 
             <div className="bg-white rounded-2xl shadow-lg p-4">
               <div className="text-sm text-slate-500 mb-1">
@@ -347,7 +359,10 @@ export default function AircraftMovementLogbook() {
 
               <div className="text-3xl font-bold text-blue-600">
                 {stats.totalMovements}
-              </div>
+                          </div>
+          </div>
+
+<div className="grid lg:grid-cols-3 gap-4"></div>
             </div>
 
             <div className="bg-white rounded-2xl shadow-lg p-4">
@@ -393,64 +408,337 @@ export default function AircraftMovementLogbook() {
                 ))}
               </div>
             </div>
-          </div>{/* ADD THESE STATES WITH YOUR OTHER useState DECLARATIONS */}
+          <div className="grid lg:grid-cols-3 gap-4">
 
-const [currentPage, setCurrentPage] = useState(1);
+  {/* Fleet Manager */}
+  <div className="bg-white rounded-2xl shadow-lg p-4 space-y-4">
 
-const recordsPerPage = 10;
+    <h2 className="text-xl font-bold text-slate-800">
+      Fleet Manager
+    </h2>
 
+    <input
+      value={newReg}
+      onChange={(e) => setNewReg(e.target.value.toUpperCase())}
+      placeholder="Aircraft Registration"
+      className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+    />
 
-{/* ADD THIS BELOW filteredHistory */}
+    <select
+      value={newType}
+      onChange={(e) => setNewType(e.target.value)}
+      className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+    >
+      <option value="">Select Aircraft Type</option>
 
-const totalPages = Math.ceil(
-  filteredHistory.length / recordsPerPage
-);
+      {tuiAircraftTypes.map((type) => (
+        <option key={type} value={type}>
+          {type}
+        </option>
+      ))}
+    </select>
 
-const paginatedHistory = filteredHistory.slice(
-  (currentPage - 1) * recordsPerPage,
-  currentPage * recordsPerPage
-);
+    <button
+      onClick={addAircraftToFleet}
+      className="w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold"
+    >
+      Add Aircraft
+    </button>
 
+  </div>
 
-{/* REPLACE YOUR CURRENT STICKY HEADER WITH THIS */}
+  {/* Movement Entry */}
+  <div className="bg-white rounded-2xl shadow-lg p-4 space-y-4">
 
-<div className="sticky top-0 z-50 bg-sky-100 pb-3">
+    <h2 className="text-xl font-bold text-slate-800">
+      New Movement
+    </h2>
 
-  <div className="bg-white rounded-2xl shadow-lg p-3 flex flex-col gap-3">
+    <input
+      type="date"
+      value={movementDate}
+      onChange={(e) => setMovementDate(e.target.value)}
+      className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+    />
 
-    <div className="flex justify-between items-center">
+    <div className="relative">
 
-      <div>
-        <h1 className="text-xl font-bold text-slate-800">
-          TUI Aircraft Logbook
-        </h1>
+      <input
+        value={aircraft}
+        onChange={(e) => {
+          setAircraft(e.target.value);
+          setShowAircraftSuggestions(true);
+        }}
+        onFocus={() => setShowAircraftSuggestions(true)}
+        onBlur={() =>
+          setTimeout(() => setShowAircraftSuggestions(false), 200)
+        }
+        placeholder="Aircraft Registration"
+        className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+      />
 
-        <div className="text-sm text-slate-500">
-          {fleet.length} aircraft loaded
-        </div>
-      </div>
+      {showAircraftSuggestions &&
+        filteredAircraftOptions.length > 0 && (
+          <div className="absolute z-20 w-full mt-1 bg-white border rounded-xl shadow-lg max-h-60 overflow-y-auto">
 
-      <div className="text-sm font-medium text-slate-600">
-        {new Date().toLocaleTimeString()}
+            {filteredAircraftOptions.map((plane) => (
+              <button
+                key={plane}
+                type="button"
+                onMouseDown={() => {
+                  setAircraft(plane);
+                  setShowAircraftSuggestions(false);
+                }}
+                className="w-full text-left px-4 py-3 hover:bg-blue-100"
+              >
+                {plane}
+              </button>
+            ))}
+
+          </div>
+        )}
+
+    </div>
+
+    <select
+      value={movementType}
+      onChange={(e) => setMovementType(e.target.value)}
+      className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+    >
+      {movementTypes.map((type) => (
+        <option key={type} value={type}>
+          {type}
+        </option>
+      ))}
+    </select>
+
+    <input
+      value={fromStand}
+      onChange={(e) =>
+        setFromStand(e.target.value.toUpperCase())
+      }
+      placeholder="From Stand"
+      list="from-stands"
+      className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+    />
+
+    <datalist id="from-stands">
+      {airportStands[airport].map((stand) => (
+        <option key={stand} value={stand} />
+      ))}
+    </datalist>
+
+    <input
+      value={toStand}
+      onChange={(e) =>
+        setToStand(e.target.value.toUpperCase())
+      }
+      placeholder="To Stand"
+      list="to-stands"
+      className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+    />
+
+    <datalist id="to-stands">
+      {airportStands[airport].map((stand) => (
+        <option key={stand} value={stand} />
+      ))}
+    </datalist>
+
+    <textarea
+      value={notes}
+      onChange={(e) => setNotes(e.target.value)}
+      placeholder="Movement Notes"
+      rows={3}
+      className="w-full border rounded-xl px-4 py-3 bg-slate-50 resize-none"
+    />
+
+    <button
+      onClick={addLogEntry}
+      className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold"
+    >
+      Add Movement
+    </button>
+
+    <button
+      onClick={exportLogbook}
+      className="w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold"
+    >
+      Export CSV
+    </button>
+
+  </div>
+
+  {/* Movement Records */}
+  <div className="bg-white rounded-2xl shadow-lg p-4">
+
+    <div className="flex justify-between items-center mb-4">
+
+      <h2 className="text-xl font-bold text-slate-800">
+        Movement Records
+      </h2>
+
+      <div className="text-sm text-slate-500">
+        {filteredHistory.length} entries
       </div>
 
     </div>
 
-    <div className="flex gap-2 flex-wrap">
+    <div className="relative mb-4">
 
-      {airports.map((code) => (
+      <input
+        value={searchTerm}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
+          setShowSearchSuggestions(true);
+          setCurrentPage(1);
+        }}
+        onFocus={() => setShowSearchSuggestions(true)}
+        onBlur={() =>
+          setTimeout(() => setShowSearchSuggestions(false), 200)
+        }
+        placeholder="Search records..."
+        className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+      />
+
+      {showSearchSuggestions &&
+        filteredAircraftSuggestions.length > 0 && (
+          <div className="absolute z-20 w-full mt-1 bg-white border rounded-xl shadow-lg max-h-60 overflow-y-auto">
+
+            {filteredAircraftSuggestions.map((plane) => (
+              <button
+                key={plane}
+                type="button"
+                onMouseDown={() => {
+                  setSearchTerm(plane);
+                  setShowSearchSuggestions(false);
+                }}
+                className="w-full text-left px-4 py-3 hover:bg-blue-100"
+              >
+                {plane}
+              </button>
+            ))}
+
+          </div>
+        )}
+
+    </div>
+
+    <div className="space-y-3 max-h-[700px] overflow-y-auto">
+
+      {paginatedHistory.map((item, index) => (
+
+        <div
+          key={`${item.aircraft}-${index}`}
+          className="border rounded-xl p-3 bg-slate-50"
+        >
+
+          <div className="flex justify-between gap-3">
+
+            <div>
+              <div className="font-bold text-slate-800">
+                {item.aircraft}
+              </div>
+
+              <div className="text-sm text-slate-500">
+                {item.date}
+              </div>
+
+              <div className="text-sm text-blue-600 font-medium">
+                {item.airport} • {item.movementType}
+              </div>
+            </div>
+
+            <div className="text-right">
+              <div className="text-sm text-slate-500">
+                Stand Move
+              </div>
+
+              <div className="font-semibold">
+                {item.fromStand} → {item.toStand}
+              </div>
+            </div>
+
+          </div>
+
+          {item.notes && (
+            <div className="mt-3 text-sm text-slate-700 bg-white rounded-lg p-3 border">
+              {item.notes}
+            </div>
+          )}
+
+          <div className="flex gap-2 mt-3">
+
+            <button
+              onClick={() =>
+  startEdit(
+    (currentPage - 1) * recordsPerPage + index
+  )
+}
+              className="flex-1 bg-amber-500 text-white py-2 rounded-lg font-semibold"
+            >
+              Edit
+            </button>
+
+            <button
+              onClick={() =>
+  deleteEntry(
+    (currentPage - 1) * recordsPerPage + index
+  )
+}
+              className="flex-1 bg-red-500 text-white py-2 rounded-lg font-semibold"
+            >
+              Delete
+            </button>
+
+          </div>
+
+        </div>
+
+      ))}
+
+    </div>
+
+    {/* Pagination */}
+    <div className="flex justify-center gap-2 mt-4 flex-wrap">
+
+      <button
+        onClick={() =>
+          setCurrentPage((prev) =>
+            Math.max(prev - 1, 1)
+          )
+        }
+        className="px-4 py-2 rounded-xl border bg-white"
+      >
+        Previous
+      </button>
+
+      {Array.from(
+        { length: totalPages },
+        (_, i) => i + 1
+      ).map((page) => (
         <button
-          key={code}
-          onClick={() => setAirport(code)}
-          className={`px-4 py-2 rounded-xl font-semibold transition-colors ${
-            airport === code
+          key={page}
+          onClick={() => setCurrentPage(page)}
+          className={`px-4 py-2 rounded-xl font-semibold ${
+            currentPage === page
               ? "bg-blue-600 text-white"
-              : "bg-slate-100 text-slate-700"
+              : "bg-white border"
           }`}
         >
-          {code}
+          {page}
         </button>
       ))}
+
+      <button
+        onClick={() =>
+          setCurrentPage((prev) =>
+            Math.min(prev + 1, totalPages)
+          )
+        }
+        className="px-4 py-2 rounded-xl border bg-white"
+      >
+        Next
+      </button>
 
     </div>
 
@@ -458,58 +746,8 @@ const paginatedHistory = filteredHistory.slice(
 
 </div>
 
-
-{/* REPLACE THIS */}
-
-filteredHistory.map((item, index) => (
-
-
-{/* WITH THIS */}
-
-paginatedHistory.map((item, index) => (
-
-
-{/* ADD THIS BELOW THE MOVEMENT RECORDS SECTION */}
-
-<div className="flex justify-center items-center gap-2 mt-4 flex-wrap">
-
-  <button
-    onClick={() =>
-      setCurrentPage((prev) =>
-        Math.max(prev - 1, 1)
-      )
-    }
-    className="bg-white border px-4 py-2 rounded-xl shadow-sm text-sm font-semibold"
-  >
-    Previous
-  </button>
-
-  {Array.from(
-    { length: totalPages },
-    (_, i) => i + 1
-  ).map((page) => (
-    <button
-      key={page}
-      onClick={() => setCurrentPage(page)}
-      className={`px-4 py-2 rounded-xl text-sm font-semibold ${
-        currentPage === page
-          ? "bg-blue-600 text-white"
-          : "bg-white border"
-      }`}
-    >
-      {page}
-    </button>
-  ))}
-
-  <button
-    onClick={() =>
-      setCurrentPage((prev) =>
-        Math.min(prev + 1, totalPages)
-      )
-    }
-    className="bg-white border px-4 py-2 rounded-xl shadow-sm text-sm font-semibold"
-  >
-    Next
-  </button>
-
 </div>
+</div>
+</div>
+  );
+}
