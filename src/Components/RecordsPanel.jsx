@@ -16,13 +16,11 @@ export default function RecordsPanel({
 
       <div className="flex flex-col gap-4 mb-4">
 
-        <div className="flex justify-between items-center flex-wrap gap-3">
-          <h2 className="text-2xl font-bold text-slate-800">
-            Movement Records
-          </h2>
-
-          
-        </div>
+  <div className="flex justify-between items-center flex-wrap gap-3">
+  <h2 className="text-2xl font-bold text-slate-800">
+    Movement Records
+  </h2>
+</div>
 
         {/* Aircraft Type Tabs */}
         <div className="flex gap-2 flex-wrap">
