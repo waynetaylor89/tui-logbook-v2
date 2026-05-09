@@ -48,6 +48,7 @@ export default function AircraftMovementLogbook() {
     "G-TUKO - Boeing 737 MAX 8",
     "G-TUKP - Boeing 737 MAX 8",
     "G-TUMF - Boeing 737 MAX 8",
+    "G-TUMM - Boeing 737 MAX 8",
     "G-TAWA - Boeing 737-800",
     "G-TAWB - Boeing 737-800",
     "G-TAWC - Boeing 737-800",
@@ -66,6 +67,7 @@ export default function AircraftMovementLogbook() {
     return savedFleet ? JSON.parse(savedFleet) : initialFleet;
   });
   const [aircraft, setAircraft] = useState("");
+  const [showAircraftSuggestions, setShowAircraftSuggestions] = useState(false);
   const [fromStand, setFromStand] = useState("");
   const [toStand, setToStand] = useState("");
   const [notes, setNotes] = useState("");
@@ -110,6 +112,16 @@ export default function AircraftMovementLogbook() {
       JSON.stringify(darkMode)
     );
   }, [darkMode]);
+
+  const filteredAircraftOptions = useMemo(() => {
+    if (!aircraft.trim()) return fleet.slice(0, 12);
+
+    return fleet
+      .filter((plane) =>
+        plane.toLowerCase().includes(aircraft.toLowerCase())
+      )
+      .slice(0, 12);
+  }, [aircraft, fleet]);
 
   const is7878Selected = aircraft.includes("787-8");
 
@@ -435,18 +447,37 @@ export default function AircraftMovementLogbook() {
                 ))}
               </select>
 
-              <select
-                value={aircraft}
-                onChange={(e) => setAircraft(e.target.value)}
-                className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
-              >
-                <option value="">Select Aircraft</option>
-                {fleet.map((plane) => (
-                  <option key={plane} value={plane}>
-                    {plane}
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <input
+                  value={aircraft}
+                  onChange={(e) => {
+                    setAircraft(e.target.value);
+                    setShowAircraftSuggestions(true);
+                  }}
+                  onFocus={() => setShowAircraftSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowAircraftSuggestions(false), 200)}
+                  placeholder="Start typing aircraft registration..."
+                  className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
+                />
+
+                {showAircraftSuggestions && filteredAircraftOptions.length > 0 && (
+                  <div className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl shadow-xl max-h-60 overflow-y-auto">
+                    {filteredAircraftOptions.map((plane) => (
+                      <button
+                        key={plane}
+                        type="button"
+                        onMouseDown={() => {
+                          setAircraft(plane);
+                          setShowAircraftSuggestions(false);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-blue-100 dark:hover:bg-slate-700 text-slate-800 dark:text-white text-sm transition-colors"
+                      >
+                        {plane}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               {is7878Selected && (
                 <div className="bg-amber-100 border border-amber-300 text-amber-900 rounded-2xl p-4 text-sm font-semibold">
