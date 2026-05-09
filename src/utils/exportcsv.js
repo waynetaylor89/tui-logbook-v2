@@ -1,6 +1,4 @@
-// src/utils/exportCSV.js
-
-export function exportLogbookCSV(data) {
+export const exportLogbookCSV = (history) => {
   const rows = [
     [
       "Aircraft",
@@ -12,7 +10,7 @@ export function exportLogbookCSV(data) {
       "Notes",
     ],
 
-    ...data.map((entry) => [
+    ...history.map((entry) => [
       entry.aircraft,
       entry.movementType,
       entry.fromStand,
@@ -27,7 +25,9 @@ export function exportLogbookCSV(data) {
     .map((row) => row.map((item) => `"${item}"`).join(","))
     .join("\n");
 
-  const blob = new Blob([csv], { type: "text/csv" });
+  const blob = new Blob([csv], {
+    type: "text/csv",
+  });
 
   const url = URL.createObjectURL(blob);
 
@@ -38,4 +38,4 @@ export function exportLogbookCSV(data) {
   link.click();
 
   URL.revokeObjectURL(url);
-}import { exportLogbookCSV } from "./utils/exportCSV";
+};
