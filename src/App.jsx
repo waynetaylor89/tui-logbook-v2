@@ -301,7 +301,7 @@ export default function AircraftMovementLogbook() {
 
   return (
     <div className={darkMode ? "dark min-h-screen bg-slate-900" : "min-h-screen bg-sky-200"}>
-      <div className="min-h-screen bg-white dark:bg-slate-900 p-2 sm:p-4 lg:p-6 transition-colors">
+      <div className="min-h-screen bg-sky-100 dark:bg-slate-900 p-2 sm:p-4 lg:p-6 transition-colors">
         <div className="max-w-7xl mx-auto space-y-3 sm:space-y-6">
           <div className="flex justify-end">
             <button
