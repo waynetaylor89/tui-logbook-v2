@@ -393,4 +393,123 @@ export default function AircraftMovementLogbook() {
                 ))}
               </div>
             </div>
-          </div>
+          </div>{/* ADD THESE STATES WITH YOUR OTHER useState DECLARATIONS */}
+
+const [currentPage, setCurrentPage] = useState(1);
+
+const recordsPerPage = 10;
+
+
+{/* ADD THIS BELOW filteredHistory */}
+
+const totalPages = Math.ceil(
+  filteredHistory.length / recordsPerPage
+);
+
+const paginatedHistory = filteredHistory.slice(
+  (currentPage - 1) * recordsPerPage,
+  currentPage * recordsPerPage
+);
+
+
+{/* REPLACE YOUR CURRENT STICKY HEADER WITH THIS */}
+
+<div className="sticky top-0 z-50 bg-sky-100 pb-3">
+
+  <div className="bg-white rounded-2xl shadow-lg p-3 flex flex-col gap-3">
+
+    <div className="flex justify-between items-center">
+
+      <div>
+        <h1 className="text-xl font-bold text-slate-800">
+          TUI Aircraft Logbook
+        </h1>
+
+        <div className="text-sm text-slate-500">
+          {fleet.length} aircraft loaded
+        </div>
+      </div>
+
+      <div className="text-sm font-medium text-slate-600">
+        {new Date().toLocaleTimeString()}
+      </div>
+
+    </div>
+
+    <div className="flex gap-2 flex-wrap">
+
+      {airports.map((code) => (
+        <button
+          key={code}
+          onClick={() => setAirport(code)}
+          className={`px-4 py-2 rounded-xl font-semibold transition-colors ${
+            airport === code
+              ? "bg-blue-600 text-white"
+              : "bg-slate-100 text-slate-700"
+          }`}
+        >
+          {code}
+        </button>
+      ))}
+
+    </div>
+
+  </div>
+
+</div>
+
+
+{/* REPLACE THIS */}
+
+filteredHistory.map((item, index) => (
+
+
+{/* WITH THIS */}
+
+paginatedHistory.map((item, index) => (
+
+
+{/* ADD THIS BELOW THE MOVEMENT RECORDS SECTION */}
+
+<div className="flex justify-center items-center gap-2 mt-4 flex-wrap">
+
+  <button
+    onClick={() =>
+      setCurrentPage((prev) =>
+        Math.max(prev - 1, 1)
+      )
+    }
+    className="bg-white border px-4 py-2 rounded-xl shadow-sm text-sm font-semibold"
+  >
+    Previous
+  </button>
+
+  {Array.from(
+    { length: totalPages },
+    (_, i) => i + 1
+  ).map((page) => (
+    <button
+      key={page}
+      onClick={() => setCurrentPage(page)}
+      className={`px-4 py-2 rounded-xl text-sm font-semibold ${
+        currentPage === page
+          ? "bg-blue-600 text-white"
+          : "bg-white border"
+      }`}
+    >
+      {page}
+    </button>
+  ))}
+
+  <button
+    onClick={() =>
+      setCurrentPage((prev) =>
+        Math.min(prev + 1, totalPages)
+      )
+    }
+    className="bg-white border px-4 py-2 rounded-xl shadow-sm text-sm font-semibold"
+  >
+    Next
+  </button>
+
+</div>
