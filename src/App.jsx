@@ -71,7 +71,11 @@ export default function AircraftMovementLogbook() {
   const [notes, setNotes] = useState("");
   const [airport, setAirport] = useState("MAN");
   const [movementType, setMovementType] = useState("Tow");
+  const [movementDate, setMovementDate] = useState(() => {
+    return new Date().toISOString().split("T")[0];
+  });
   const [searchTerm, setSearchTerm] = useState("");
+  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem("aircraft-logbook-theme");
     return savedTheme ? JSON.parse(savedTheme) : false;
@@ -108,6 +112,14 @@ export default function AircraftMovementLogbook() {
   }, [darkMode]);
 
   const is7878Selected = aircraft.includes("787-8");
+
+  const filteredAircraftSuggestions = useMemo(() => {
+    if (!searchTerm.trim()) return [];
+
+    return fleet.filter((plane) =>
+      plane.toLowerCase().includes(searchTerm.toLowerCase())
+    ).slice(0, 8);
+  }, [searchTerm, fleet]);
 
   const filteredHistory = useMemo(() => {
     return history.filter((entry) => {
@@ -169,6 +181,8 @@ export default function AircraftMovementLogbook() {
       return;
     }
 
+    const selectedDate = new Date(movementDate);
+
     const entry = {
       aircraft,
       airport,
@@ -176,7 +190,7 @@ export default function AircraftMovementLogbook() {
       fromStand,
       toStand,
       notes,
-      date: new Date().toLocaleDateString(),
+      date: selectedDate.toLocaleDateString(),
       time: new Date().toLocaleTimeString(),
     };
 
@@ -187,6 +201,7 @@ export default function AircraftMovementLogbook() {
     setToStand("");
     setNotes("");
     setMovementType("Tow");
+    setMovementDate(new Date().toISOString().split("T")[0]);
   };
 
   const exportLogbook = () => {
@@ -266,8 +281,8 @@ export default function AircraftMovementLogbook() {
 
   return (
     <div className={darkMode ? "dark min-h-screen bg-slate-900" : "min-h-screen bg-slate-100"}>
-      <div className="min-h-screen bg-slate-100 dark:bg-slate-900 p-6 transition-colors">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <div className="min-h-screen bg-slate-100 dark:bg-slate-900 p-2 sm:p-4 lg:p-6 transition-colors">
+        <div className="max-w-7xl mx-auto space-y-3 sm:space-y-6">
           <div className="flex justify-end">
             <button
               onClick={() => setDarkMode(!darkMode)}
@@ -277,7 +292,7 @@ export default function AircraftMovementLogbook() {
             </button>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-5 transition-colors">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-3 sm:p-5 transition-colors">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-slate-800 dark:text-white">
                 Monthly Movement Trend
@@ -309,17 +324,17 @@ export default function AircraftMovementLogbook() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-4">
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-5 transition-colors">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-3 sm:p-5 transition-colors">
               <div className="text-sm text-slate-500 dark:text-slate-300 mb-2">
                 Total Movements
               </div>
-              <div className="text-4xl font-bold text-blue-600">
+              <div className="text-2xl sm:text-4xl font-bold text-blue-600">
                 {stats.totalMovements}
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-5 transition-colors">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-3 sm:p-5 transition-colors">
               <div className="text-sm text-slate-500 dark:text-slate-300 mb-3">
                 Top Aircraft
               </div>
@@ -343,7 +358,7 @@ export default function AircraftMovementLogbook() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-5 transition-colors">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-3 sm:p-5 transition-colors">
               <div className="text-sm text-slate-500 dark:text-slate-300 mb-3">
                 Most Used Stands
               </div>
@@ -369,8 +384,8 @@ export default function AircraftMovementLogbook() {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6">
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-6 space-y-4 transition-colors">
-              <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-3 sm:p-6 space-y-4 transition-colors">
+              <h2 className="text-lg sm:text-2xl font-bold text-slate-800 dark:text-white">
                 Fleet Manager
               </h2>
 
@@ -378,33 +393,40 @@ export default function AircraftMovementLogbook() {
                 value={newReg}
                 onChange={(e) => setNewReg(e.target.value.toUpperCase())}
                 placeholder="Aircraft Registration"
-                className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-4 py-3 transition-colors"
+                className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
               />
 
               <input
                 value={newType}
                 onChange={(e) => setNewType(e.target.value)}
                 placeholder="Aircraft Type"
-                className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-4 py-3 transition-colors"
+                className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
               />
 
               <button
                 onClick={addAircraftToFleet}
-                className="w-full bg-emerald-600 text-white rounded-2xl py-3 font-semibold"
+                className="w-full bg-emerald-600 text-white rounded-xl sm:rounded-2xl py-2.5 sm:py-3 font-semibold text-sm sm:text-base"
               >
                 Add Aircraft
               </button>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-6 space-y-4 transition-colors">
-              <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-3 sm:p-6 space-y-4 transition-colors">
+              <h2 className="text-lg sm:text-2xl font-bold text-slate-800 dark:text-white">
                 New Movement Entry
               </h2>
+
+              <input
+                type="date"
+                value={movementDate}
+                onChange={(e) => setMovementDate(e.target.value)}
+                className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
+              />
 
               <select
                 value={airport}
                 onChange={(e) => setAirport(e.target.value)}
-                className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-4 py-3 transition-colors"
+                className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
               >
                 {airports.map((airportCode) => (
                   <option key={airportCode} value={airportCode}>
@@ -416,7 +438,7 @@ export default function AircraftMovementLogbook() {
               <select
                 value={aircraft}
                 onChange={(e) => setAircraft(e.target.value)}
-                className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-4 py-3 transition-colors"
+                className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
               >
                 <option value="">Select Aircraft</option>
                 {fleet.map((plane) => (
@@ -435,7 +457,7 @@ export default function AircraftMovementLogbook() {
               <select
                 value={fromStand}
                 onChange={(e) => setFromStand(e.target.value)}
-                className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-4 py-3 transition-colors"
+                className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
               >
                 <option value="">From Stand</option>
                 {airportStands[airport].map((stand) => (
@@ -448,7 +470,7 @@ export default function AircraftMovementLogbook() {
               <select
                 value={toStand}
                 onChange={(e) => setToStand(e.target.value)}
-                className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-4 py-3 transition-colors"
+                className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
               >
                 <option value="">To Stand</option>
                 {airportStands[airport].map((stand) => (
@@ -461,7 +483,7 @@ export default function AircraftMovementLogbook() {
               <select
                 value={movementType}
                 onChange={(e) => setMovementType(e.target.value)}
-                className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-4 py-3 transition-colors"
+                className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
               >
                 {movementTypes.map((type) => (
                   <option key={type} value={type}>
@@ -474,35 +496,35 @@ export default function AircraftMovementLogbook() {
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Movement Notes"
-                rows={4}
-                className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-4 py-3 resize-none transition-colors"
+                rows={3}
+                className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 resize-none transition-colors"
               />
 
               <button
                 onClick={addLogEntry}
-                className="w-full bg-blue-600 text-white rounded-2xl py-3 font-semibold"
+                className="w-full bg-blue-600 text-white rounded-xl sm:rounded-2xl py-2.5 sm:py-3 font-semibold text-sm sm:text-base"
               >
                 Add To Logbook
               </button>
 
               <button
                 onClick={exportLogbook}
-                className="w-full bg-emerald-600 text-white rounded-2xl py-3 font-semibold"
+                className="w-full bg-emerald-600 text-white rounded-xl sm:rounded-2xl py-2.5 sm:py-3 font-semibold text-sm sm:text-base"
               >
                 Export CSV
               </button>
 
               <button
                 onClick={clearLogbook}
-                className="w-full bg-red-100 text-red-700 rounded-2xl py-3 font-semibold"
+                className="w-full bg-red-100 text-red-700 rounded-xl sm:rounded-2xl py-2.5 sm:py-3 font-semibold text-sm sm:text-base"
               >
                 Clear Logbook
               </button>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl p-6 transition-colors">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl shadow-lg sm:shadow-xl p-3 sm:p-6 transition-colors">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
+                <h2 className="text-lg sm:text-2xl font-bold text-slate-800 dark:text-white">
                   Movement Records
                 </h2>
 
@@ -511,14 +533,161 @@ export default function AircraftMovementLogbook() {
                 </span>
               </div>
 
-              <input
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search records..."
-                className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-4 py-3 mb-4 transition-colors"
-              />
+              <div className="relative mb-4">
+                <input
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setShowSearchSuggestions(true);
+                  }}
+                  onFocus={() => setShowSearchSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
+                  placeholder="Search aircraft registration..."
+                  className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
+                />
 
-              <div className="space-y-4 max-h-[700px] overflow-y-auto">
+                {showSearchSuggestions && filteredAircraftSuggestions.length > 0 && (
+                  <div className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl shadow-xl max-h-60 overflow-y-auto">
+                    {filteredAircraftSuggestions.map((plane) => (
+                      <button
+                        key={plane}
+                        onMouseDown={() => {
+                          setSearchTerm(plane);
+                          setShowSearchSuggestions(false);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-blue-100 dark:hover:bg-slate-700 text-slate-800 dark:text-white text-sm transition-colors"
+                      >
+                        {plane}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2 sm:space-y-4 max-h-[60vh] sm:max-h-[700px] overflow-y-auto">
+                {editingIndex !== null && editingData && (
+                  <div className="border-2 border-amber-400 dark:border-amber-500 rounded-2xl p-3 sm:p-4 bg-amber-50 dark:bg-slate-900 transition-colors mb-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white">
+                        Edit Movement Record
+                      </h3>
+
+                      <button
+                        onClick={() => {
+                          setEditingIndex(null);
+                          setEditingData(null);
+                        }}
+                        className="text-slate-500 hover:text-red-500 text-sm font-semibold"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+
+                    <div className="space-y-3">
+                      <input
+                        type="date"
+                        value={editingData.date || ""}
+                        onChange={(e) =>
+                          setEditingData({
+                            ...editingData,
+                            date: e.target.value,
+                          })
+                        }
+                        className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
+                      />
+
+                      <select
+                        value={editingData.aircraft}
+                        onChange={(e) =>
+                          setEditingData({
+                            ...editingData,
+                            aircraft: e.target.value,
+                          })
+                        }
+                        className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
+                      >
+                        {fleet.map((plane) => (
+                          <option key={plane} value={plane}>
+                            {plane}
+                          </option>
+                        ))}
+                      </select>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <select
+                          value={editingData.fromStand}
+                          onChange={(e) =>
+                            setEditingData({
+                              ...editingData,
+                              fromStand: e.target.value,
+                            })
+                          }
+                          className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
+                        >
+                          {airportStands[editingData.airport || airport].map((stand) => (
+                            <option key={stand} value={stand}>
+                              {stand}
+                            </option>
+                          ))}
+                        </select>
+
+                        <select
+                          value={editingData.toStand}
+                          onChange={(e) =>
+                            setEditingData({
+                              ...editingData,
+                              toStand: e.target.value,
+                            })
+                          }
+                          className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
+                        >
+                          {airportStands[editingData.airport || airport].map((stand) => (
+                            <option key={stand} value={stand}>
+                              {stand}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <select
+                        value={editingData.movementType}
+                        onChange={(e) =>
+                          setEditingData({
+                            ...editingData,
+                            movementType: e.target.value,
+                          })
+                        }
+                        className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 transition-colors"
+                      >
+                        {movementTypes.map((type) => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                      </select>
+
+                      <textarea
+                        value={editingData.notes || ""}
+                        onChange={(e) =>
+                          setEditingData({
+                            ...editingData,
+                            notes: e.target.value,
+                          })
+                        }
+                        rows={3}
+                        placeholder="Edit movement notes"
+                        className="w-full border dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-2xl px-3 sm:px-4 py-2 sm:py-3 resize-none transition-colors"
+                      />
+
+                      <button
+                        onClick={saveEdit}
+                        className="w-full bg-amber-500 hover:bg-amber-600 text-white rounded-xl sm:rounded-2xl py-2.5 sm:py-3 font-semibold text-sm sm:text-base transition-colors"
+                      >
+                        Save Changes
+                      </button>
+                    </div>
+                  </div>
+                )}
                 {filteredHistory.length === 0 ? (
                   <div className="border-2 border-dashed dark:border-slate-600 rounded-2xl p-8 text-center text-slate-400 dark:text-slate-500 transition-colors">
                     No records found.
@@ -527,19 +696,19 @@ export default function AircraftMovementLogbook() {
                   filteredHistory.map((item, index) => (
                     <div
                       key={`${item.aircraft}-${index}`}
-                      className="border dark:border-slate-700 rounded-2xl p-4 bg-slate-50 dark:bg-slate-900 transition-colors"
+                      className="border dark:border-slate-700 rounded-xl sm:rounded-2xl p-2 sm:p-4 bg-slate-50 dark:bg-slate-900 transition-colors"
                     >
-                      <div className="flex justify-between items-start gap-4">
+                      <div className="flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-4">
                         <div>
-                          <div className="font-bold text-lg text-slate-800 dark:text-white">
+                          <div className="font-bold text-sm sm:text-lg text-slate-800 dark:text-white">
                             {item.aircraft}
                           </div>
 
-                          <div className="text-sm text-slate-500 dark:text-slate-300 mt-1">
+                          <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-300 mt-1">
                             {item.date} • {item.time}
                           </div>
 
-                          <div className="text-sm font-medium text-blue-600 mt-1">
+                          <div className="text-xs sm:text-sm font-medium text-blue-600 mt-1">
                             {item.airport} • {item.movementType}
                           </div>
                         </div>
@@ -549,19 +718,19 @@ export default function AircraftMovementLogbook() {
                             Stand Move
                           </div>
 
-                          <div className="font-semibold text-slate-700 dark:text-slate-200">
+                          <div className="font-semibold text-sm sm:text-base text-slate-700 dark:text-slate-200">
                             {item.fromStand} → {item.toStand}
                           </div>
                         </div>
                       </div>
 
                       {item.notes && (
-                        <div className="mt-4 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-xl p-3 text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap transition-colors">
+                        <div className="mt-2 sm:mt-4 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-xl p-2 sm:p-3 text-xs sm:text-sm text-slate-700 dark:text-slate-200 whitespace-pre-wrap transition-colors">
                           {item.notes}
                         </div>
                       )}
 
-                      <div className="flex gap-2 mt-4 pt-4 border-t dark:border-slate-700">
+                      <div className="flex gap-2 mt-2 sm:mt-4 pt-2 sm:pt-4 border-t dark:border-slate-700">
                         <button
                           onClick={() => startEdit(index)}
                           className="flex-1 bg-amber-500 hover:bg-amber-600 text-white rounded-xl py-2 font-semibold text-sm transition-colors"
