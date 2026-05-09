@@ -265,7 +265,7 @@ export default function AircraftMovementLogbook() {
   }, [history]);
 
   return (
-    <div className={darkMode ? "dark" : ""}>
+    <div className={darkMode ? "dark min-h-screen bg-slate-900" : "min-h-screen bg-slate-100"}>
       <div className="min-h-screen bg-slate-100 dark:bg-slate-900 p-6 transition-colors">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="flex justify-end">
