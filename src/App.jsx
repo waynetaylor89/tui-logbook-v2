@@ -19,14 +19,43 @@ export default function AircraftMovementLogbook() {
     "G-TUIE - Boeing 787-8 Dreamliner",
     "G-TUIF - Boeing 787-8 Dreamliner",
     "G-TUIJ - Boeing 787-9 Dreamliner",
+    "G-TUIK - Boeing 787-9 Dreamliner",
+    "G-TUIL - Boeing 787-9 Dreamliner",
+    "G-TUIM - Boeing 787-9 Dreamliner",
+    "G-TUKA - Boeing 737 MAX 8",
+    "G-TUKB - Boeing 737 MAX 8",
+    "G-TUKC - Boeing 737 MAX 8",
+    "G-TUKD - Boeing 737 MAX 8",
+    "G-TUKE - Boeing 737 MAX 8",
+    "G-TUKF - Boeing 737 MAX 8",
+    "G-TUKG - Boeing 737 MAX 8",
+    "G-TUKH - Boeing 737 MAX 8",
+    "G-TUKI - Boeing 737 MAX 8",
+    "G-TUKJ - Boeing 737 MAX 8",
+    "G-TUKK - Boeing 737 MAX 8",
     "G-TUKL - Boeing 737 MAX 8",
     "G-TUKM - Boeing 737 MAX 8",
+    "G-TUKN - Boeing 737 MAX 8",
+    "G-TUKO - Boeing 737 MAX 8",
+    "G-TUKP - Boeing 737 MAX 8",
     "G-TUMF - Boeing 737 MAX 8",
     "G-TAWA - Boeing 737-800",
     "G-TAWB - Boeing 737-800",
+    "G-TAWC - Boeing 737-800",
+    "G-TAWD - Boeing 737-800",
+    "G-TAWE - Boeing 737-800",
+    "G-TAWF - Boeing 737-800",
+    "G-TAWG - Boeing 737-800",
+    "G-TAWH - Boeing 737-800",
+    "G-TAWI - Boeing 737-800",
+    "G-TAWJ - Boeing 737-800",
+    "G-TAWK - Boeing 737-800",
   ];
 
-  const [fleet, setFleet] = useState(initialFleet);
+  const [fleet, setFleet] = useState(() => {
+    const savedFleet = localStorage.getItem("aircraft-logbook-fleet");
+    return savedFleet ? JSON.parse(savedFleet) : initialFleet;
+  });
   const [aircraft, setAircraft] = useState("");
   const [fromStand, setFromStand] = useState("");
   const [toStand, setToStand] = useState("");
@@ -49,6 +78,13 @@ export default function AircraftMovementLogbook() {
       JSON.stringify(history)
     );
   }, [history]);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "aircraft-logbook-fleet",
+      JSON.stringify(fleet)
+    );
+  }, [fleet]);
 
   const is7878Selected = aircraft.includes("787-8");
 
