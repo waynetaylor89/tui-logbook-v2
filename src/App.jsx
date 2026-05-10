@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 
 import Header from "./components/Header.jsx";
-import StatsCards from "./components/StatsCards.jsx";
+import Login from "./components/Login.jsx";
 import FleetManager from "./components/FleetManager.jsx";
 import MovementForm from "./components/MovementForm.jsx";
 import RecordsPanel from "./components/RecordsPanel.jsx";
@@ -67,7 +67,7 @@ export default function AircraftMovementLogbook() {
 
   const [history, setHistory] = useState(() => {
     const savedHistory = localStorage.getItem("aircraft-logbook-history");
-    return savedHistory ? JSON.parse(savedHistory) : [];
+    return savedHistory ? JSON.parse(savedHistory) : {};
   });
 
   const [aircraft, setAircraft] = useState("");
@@ -86,9 +86,16 @@ export default function AircraftMovementLogbook() {
   const [newReg, setNewReg] = useState("");
   const [newType, setNewType] = useState("");
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [activeTab, setActiveTab] = useState("ALL");
-  const [activePage, setActivePage] = useState("home");
+  const [currentUser, setCurrentUser] = useState(() => {
+    return localStorage.getItem("currentUser") || null;
+  });
+
+  const [users, setUsers] = useState(() => {
+    const savedUsers = localStorage.getItem("users");
+    return savedUsers ? JSON.parse(savedUsers) : {};
+  });
+
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const recordsPerPage = 10;
 
@@ -98,6 +105,14 @@ export default function AircraftMovementLogbook() {
       JSON.stringify(history)
     );
   }, [history]);
+
+  useEffect(() => {
+    localStorage.setItem("currentUser", currentUser);
+  }, [currentUser]);
+
+  useEffect(() => {
+    localStorage.setItem("users", JSON.stringify(users));
+  }, [users]);
 
   useEffect(() => {
     localStorage.setItem(
@@ -117,7 +132,8 @@ export default function AircraftMovementLogbook() {
   }, [aircraft, fleet]);
 
   const filteredHistory = useMemo(() => {
-    return history.filter((entry) => {
+    const userHistory = history[currentUser] || [];
+    return userHistory.filter((entry) => {
       const searchable = `
         ${entry.aircraft}
         ${entry.fromStand}
@@ -130,15 +146,16 @@ export default function AircraftMovementLogbook() {
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
     });
-  }, [history, searchTerm]);
+  }, [history, searchTerm, currentUser]);
 
   const typeFilteredHistory = useMemo(() => {
-    if (activeTab === "ALL") return filteredHistory;
+    const baseHistory = isAdmin ? allHistory : filteredHistory;
+    if (activeTab === "ALL") return baseHistory;
 
-    return filteredHistory.filter((entry) =>
+    return baseHistory.filter((entry) =>
       entry.aircraft.includes(activeTab)
     );
-  }, [filteredHistory, activeTab]);
+  }, [filteredHistory, activeTab, isAdmin, allHistory]);
 
   const totalPages = Math.max(
     1,
@@ -151,10 +168,11 @@ export default function AircraftMovementLogbook() {
   );
 
   const stats = useMemo(() => {
+    const userHistory = history[currentUser] || [];
     const aircraftCounts = {};
     const standCounts = {};
 
-    history.forEach((entry) => {
+    userHistory.forEach((entry) => {
       aircraftCounts[entry.aircraft] =
         (aircraftCounts[entry.aircraft] || 0) + 1;
 
@@ -166,7 +184,7 @@ export default function AircraftMovementLogbook() {
     });
 
     return {
-      totalMovements: history.length,
+      totalMovements: userHistory.length,
 
       topAircraft: Object.entries(aircraftCounts)
         .sort((a, b) => b[1] - a[1])
@@ -176,20 +194,36 @@ export default function AircraftMovementLogbook() {
         .sort((a, b) => b[1] - a[1])
         .slice(0, 3),
     };
-  }, [history]);
+  }, [history, currentUser]);
 
-  const addAircraftToFleet = () => {
-    if (!newReg || !newType) {
-      alert("Please enter both registration and aircraft type.");
-      return;
+  const allHistory = useMemo(() => {
+    if (!isAdmin) return [];
+    return Object.values(history).flat();
+  }, [history, isAdmin]);
+
+  const login = (username, password) => {
+    if (username === "wayne" && password === "admin") {
+      setCurrentUser(username);
+      setIsAdmin(true);
+      return true;
     }
+    if (users[username] && users[username].password === password) {
+      setCurrentUser(username);
+      setIsAdmin(false);
+      return true;
+    }
+    return false;
+  };
 
-    const formattedAircraft = `${newReg.toUpperCase()} - ${newType}`;
+  const logout = () => {
+    setCurrentUser(null);
+    setIsAdmin(false);
+  };
 
-    setFleet([...new Set([...fleet, formattedAircraft])].sort());
-
-    setNewReg("");
-    setNewType("");
+  const register = (username, password) => {
+    if (users[username]) return false;
+    setUsers({ ...users, [username]: { password, history: [] } });
+    return true;
   };
 
   const addLogEntry = () => {
@@ -214,7 +248,8 @@ export default function AircraftMovementLogbook() {
       time: new Date().toLocaleTimeString(),
     };
 
-    setHistory([entry, ...history]);
+    const userHistory = history[currentUser] || [];
+    setHistory({ ...history, [currentUser]: [entry, ...userHistory] });
 
     setAircraft("");
     setFromStand("");
@@ -225,7 +260,8 @@ export default function AircraftMovementLogbook() {
 
  const deleteEntry = (index) => {
   if (window.confirm("Delete this movement?")) {
-    setHistory(history.filter((_, i) => i !== index));
+    const userHistory = history[currentUser] || [];
+    setHistory({ ...history, [currentUser]: userHistory.filter((_, i) => i !== index) });
   }
 };
 
@@ -233,12 +269,14 @@ const exportLogbook = () => {
   exportLogbookCSV(typeFilteredHistory);
 };
 
+  if (!currentUser) {
+    return <Login onLogin={login} onRegister={register} />;
+  }
+
   return (
     <div className="min-h-screen bg-sky-200">
       <div className="min-h-screen bg-sky-100 p-3 lg:p-6">
         <div className="max-w-7xl mx-auto space-y-4">
-
-          <Header fleetCount={fleet.length} />
 
           <div className="bg-white rounded-2xl shadow-lg p-4 flex flex-wrap gap-2">
             <button
@@ -272,6 +310,8 @@ const exportLogbook = () => {
               Movement Records
             </button>
           </div>
+
+          <Header fleetCount={fleet.length} currentUser={currentUser} isAdmin={isAdmin} onLogout={logout} />
 
           {activePage === "home" ? (
             <>
@@ -371,6 +411,8 @@ const exportLogbook = () => {
                 setCurrentPage={setCurrentPage}
                 typeFilteredHistory={typeFilteredHistory}
                 exportLogbook={exportLogbook}
+                isAdmin={isAdmin}
+                allHistory={allHistory}
               />
             </div>
           )}

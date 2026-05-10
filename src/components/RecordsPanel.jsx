@@ -11,6 +11,8 @@ export default function RecordsPanel({
   setCurrentPage,
   typeFilteredHistory,
   exportLogbook,
+  isAdmin,
+  allHistory,
 }) {
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4">
