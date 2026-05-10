@@ -1,29 +1,25 @@
 import { useEffect, useMemo, useState } from "react";
-import Header from "./components/Header.jsx";
+import { Navigate, Route, Routes } from "react-router-dom";
 import Login from "./components/Login.jsx";
-import FleetManager from "./components/FleetManager.jsx";
-import MovementForm from "./components/MovementForm.jsx";
-import RecordsPanel from "./components/RecordsPanel.jsx";
-import StatsCards from "./components/StatsCards.jsx";
-import AdminUsersPanel from "./components/AdminUsersPanel.jsx";
+import AppShell from "./layouts/AppShell.jsx";
+import HomePage from "./pages/HomePage.jsx";
+import MovementsPage from "./pages/MovementsPage.jsx";
+import RecordsPage from "./pages/RecordsPage.jsx";
+import UsersPage from "./pages/UsersPage.jsx";
 import { exportLogbookCSV } from "./utils/exportCSV.js";
 import useLogbookStore from "./store/useLogbookStore.js";
+import { AIRPORT, AIRPORT_STANDS, MOVEMENT_TYPES, TUI_AIRCRAFT_TYPES } from "./config/logbookConfig.js";
+import {
+  computeStats,
+  computeUserSummary,
+  filterHistoryBySearch,
+  filterHistoryByTabAndUser,
+  getAllHistory,
+  getCurrentUserHistory,
+  getUserOptions,
+} from "./store/selectors.js";
 
 export default function AircraftMovementLogbook() {
-  const airport = "MAN";
-
-  const airportStands = {
-    MAN: ["1", "2", "5", "12", "20", "21", "22", "23", "24", "25", "R1", "R2", "R3"],
-  };
-
-  const movementTypes = ["Tow", "Power Move", "Engineering", "Remote Stand", "Night Stop"];
-  const tuiAircraftTypes = [
-    "Boeing 737-800",
-    "Boeing 737 MAX 8",
-    "Boeing 787-8 Dreamliner",
-    "Boeing 787-9 Dreamliner",
-  ];
-
   const {
     fleet,
     history,
@@ -34,6 +30,7 @@ export default function AircraftMovementLogbook() {
     resetFleet: resetFleetInStore,
     addLogEntry: addLogEntryInStore,
     deleteEntry: deleteEntryInStore,
+    updateEntry: updateEntryInStore,
     login,
     logout,
     register,
@@ -45,7 +42,6 @@ export default function AircraftMovementLogbook() {
 
   const isAdmin = currentUser === "wayne";
 
-  const [activePage, setActivePage] = useState("home");
   const [activeTab, setActiveTab] = useState("ALL");
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -67,7 +63,7 @@ export default function AircraftMovementLogbook() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeTab, activePage, searchTerm, selectedUser]);
+  }, [activeTab, searchTerm, selectedUser]);
 
   useEffect(() => {
     if (!successMessage) return;
@@ -81,77 +77,40 @@ export default function AircraftMovementLogbook() {
   }, [aircraft, fleet]);
 
   const currentUserHistory = useMemo(() => {
-    if (!currentUser) return [];
-    return history[currentUser] || [];
+    return getCurrentUserHistory(history, currentUser);
   }, [currentUser, history]);
 
   const userOptions = useMemo(() => {
-    const keys = [...Object.keys(users), ...Object.keys(history)];
-    return ["ALL_USERS", ...Array.from(new Set(keys)).filter(Boolean)];
+    return getUserOptions(users, history);
   }, [history, users]);
 
   const filteredHistory = useMemo(() => {
-    return currentUserHistory.filter((entry) => {
-      const searchable = `${entry.aircraft} ${entry.fromStand} ${entry.toStand} ${entry.movementType} ${entry.notes || ""}`;
-      return searchable.toLowerCase().includes(searchTerm.toLowerCase());
-    });
+    return filterHistoryBySearch(currentUserHistory, searchTerm);
   }, [currentUserHistory, searchTerm]);
 
   const allHistory = useMemo(() => {
-    if (!isAdmin) return [];
-    return Object.values(history).flat();
+    return getAllHistory(history, isAdmin);
   }, [history, isAdmin]);
 
   const typeFilteredHistory = useMemo(() => {
-    let baseHistory = isAdmin ? allHistory : filteredHistory;
-    if (isAdmin && selectedUser !== "ALL_USERS") {
-      baseHistory = baseHistory.filter((entry) => entry.createdBy === selectedUser);
-    }
-    if (activeTab === "ALL") return baseHistory;
-    return baseHistory.filter((entry) => entry.aircraft.includes(activeTab));
+    return filterHistoryByTabAndUser({
+      isAdmin,
+      allHistory,
+      filteredHistory,
+      selectedUser,
+      activeTab,
+    });
   }, [activeTab, allHistory, filteredHistory, isAdmin, selectedUser]);
 
   const totalPages = Math.max(1, Math.ceil(typeFilteredHistory.length / recordsPerPage));
   const paginatedHistory = typeFilteredHistory.slice((currentPage - 1) * recordsPerPage, currentPage * recordsPerPage);
 
   const stats = useMemo(() => {
-    const baseHistory = isAdmin ? allHistory : currentUserHistory;
-    const aircraftCounts = {};
-    const standCounts = {};
-
-    baseHistory.forEach((entry) => {
-      aircraftCounts[entry.aircraft] = (aircraftCounts[entry.aircraft] || 0) + 1;
-      standCounts[entry.fromStand] = (standCounts[entry.fromStand] || 0) + 1;
-      standCounts[entry.toStand] = (standCounts[entry.toStand] || 0) + 1;
-    });
-
-    return {
-      totalMovements: baseHistory.length,
-      topAircraft: Object.entries(aircraftCounts).sort((a, b) => b[1] - a[1]).slice(0, 3),
-      topStands: Object.entries(standCounts).sort((a, b) => b[1] - a[1]).slice(0, 3),
-      topUsers: isAdmin
-        ? Object.entries(
-            baseHistory.reduce((acc, entry) => {
-              acc[entry.createdBy] = (acc[entry.createdBy] || 0) + 1;
-              return acc;
-            }, {})
-          )
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 3)
-        : [],
-      userCount: isAdmin ? Object.keys(users).length : 0,
-    };
+    return computeStats({ isAdmin, allHistory, currentUserHistory, users });
   }, [allHistory, currentUserHistory, isAdmin, users]);
 
   const userSummary = useMemo(() => {
-    if (!isAdmin) return [];
-    return Object.entries(history)
-      .filter(([username]) => username)
-      .map(([username, entries]) => ({
-        username,
-        movements: (entries || []).length,
-      }))
-      .sort((a, b) => b.movements - a.movements);
+    return computeUserSummary(history, isAdmin);
   }, [history, isAdmin]);
 
   const handleResetFleet = () => {
@@ -191,7 +150,7 @@ export default function AircraftMovementLogbook() {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       createdBy: currentUser,
       aircraft,
-      airport,
+      airport: AIRPORT,
       movementType,
       fromStand,
       toStand,
@@ -212,9 +171,33 @@ export default function AircraftMovementLogbook() {
 
   const handleDeleteEntry = (id, owner) => {
     if (!id) return;
+    const canModify = isAdmin || owner === currentUser;
+    if (!canModify) {
+      alert("You can only delete your own records.");
+      return;
+    }
     if (window.confirm("Delete this movement?")) {
       deleteEntryInStore(id, owner);
     }
+  };
+
+  const handleEditEntry = (id, owner, updates) => {
+    if (!id) return;
+    const canModify = isAdmin || owner === currentUser;
+    if (!canModify) {
+      alert("You can only edit your own records.");
+      return false;
+    }
+    if (!updates.aircraft || !updates.fromStand || !updates.toStand) {
+      alert("Aircraft, From Stand, and To Stand are required.");
+      return false;
+    }
+    if (updates.fromStand === updates.toStand) {
+      alert("From Stand and To Stand cannot match.");
+      return false;
+    }
+    updateEntryInStore(id, owner, updates);
+    return true;
   };
 
   const handleDeleteUser = (username) => {
@@ -253,178 +236,102 @@ export default function AircraftMovementLogbook() {
   }
 
   return (
-    <div className="min-h-screen bg-sky-200">
-      <div className="min-h-screen bg-sky-100 p-3 lg:p-6">
-        <div className="max-w-7xl mx-auto space-y-4">
-          <div className="bg-white rounded-2xl shadow-lg p-4 flex flex-wrap gap-2">
-            <button
-              onClick={() => setActivePage("home")}
-              className={`px-4 py-2 rounded-xl font-semibold ${
-                activePage === "home" ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-700"
-              }`}
-            >
-              Home
-            </button>
-            <button
-              onClick={() => setActivePage("movements")}
-              className={`px-4 py-2 rounded-xl font-semibold ${
-                activePage === "movements" ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-700"
-              }`}
-            >
-              Aircraft Movements
-            </button>
-            <button
-              onClick={() => setActivePage("records")}
-              className={`px-4 py-2 rounded-xl font-semibold ${
-                activePage === "records" ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-700"
-              }`}
-            >
-              Movement Records
-            </button>
-            {isAdmin && (
-              <button
-                onClick={() => setActivePage("users")}
-                className={`px-4 py-2 rounded-xl font-semibold ${
-                  activePage === "users" ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-700"
-                }`}
-              >
-                Manage Users
-              </button>
-            )}
-          </div>
-
-          <Header fleetCount={fleet.length} currentUser={currentUser} isAdmin={isAdmin} onLogout={logout} />
-
-          {activePage === "home" ? (
-            <>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-slate-800">Statistics Overview</h2>
-                  <div className="text-sm text-slate-500">Live movement tracking</div>
-                </div>
-                <StatsCards stats={stats} />
-                {isAdmin && userSummary.length > 0 && (
-                  <div className="bg-white rounded-2xl shadow-lg p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h3 className="text-xl font-bold text-slate-800">User Movement Summary</h3>
-                        <div className="text-sm text-slate-500">Ranked by total movements logged.</div>
-                      </div>
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full text-left text-sm text-slate-700">
-                        <thead>
-                          <tr>
-                            <th className="px-4 py-3 font-medium text-slate-500">User</th>
-                            <th className="px-4 py-3 font-medium text-slate-500">Movements</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {userSummary.map((row) => (
-                            <tr key={row.username} className="border-t">
-                              <td className="px-4 py-3">{row.username}</td>
-                              <td className="px-4 py-3 font-semibold text-slate-800">{row.movements}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div className="grid lg:grid-cols-3 gap-4">
-                <FleetManager
-                  newReg={newReg}
-                  setNewReg={setNewReg}
-                  newType={newType}
-                  setNewType={setNewType}
-                  tuiAircraftTypes={tuiAircraftTypes}
-                  addAircraftToFleet={handleAddAircraftToFleet}
-                  resetFleet={handleResetFleet}
-                />
-                <div className="hidden lg:block"></div>
-              </div>
-            </>
-          ) : activePage === "users" ? (
-            <AdminUsersPanel
-              users={users}
-              history={history}
+    <Routes>
+      <Route
+        element={<AppShell fleetCount={fleet.length} currentUser={currentUser} isAdmin={isAdmin} onLogout={logout} />}
+      >
+        <Route
+          path="/"
+          element={
+            <HomePage
+              isAdmin={isAdmin}
               userSummary={userSummary}
-              onDeleteUser={handleDeleteUser}
-              onResetPassword={resetUserPassword}
+              stats={stats}
+              newReg={newReg}
+              setNewReg={setNewReg}
+              newType={newType}
+              setNewType={setNewType}
+              tuiAircraftTypes={TUI_AIRCRAFT_TYPES}
+              handleAddAircraftToFleet={handleAddAircraftToFleet}
+              handleResetFleet={handleResetFleet}
             />
-          ) : activePage === "movements" ? (
-            <div className="space-y-4">
-              <div className="bg-white rounded-2xl shadow-lg p-4">
-                <div className="flex items-center justify-between gap-4 flex-wrap">
-                  <div>
-                    <h2 className="text-2xl font-bold text-slate-800">Aircraft Movements</h2>
-                    <div className="text-sm text-slate-500">Log new movements here.</div>
-                  </div>
-                  <div className="text-sm text-slate-500">
-                    {isAdmin ? allHistory.length : currentUserHistory.length} records total
-                  </div>
-                </div>
-              </div>
-              <MovementForm
-                movementDate={movementDate}
-                setMovementDate={setMovementDate}
-                aircraft={aircraft}
-                setAircraft={setAircraft}
-                movementType={movementType}
-                setMovementType={setMovementType}
-                fromStand={fromStand}
-                setFromStand={setFromStand}
-                toStand={toStand}
-                setToStand={setToStand}
-                notes={notes}
-                setNotes={setNotes}
-                movementTypes={movementTypes}
-                airportStands={airportStands}
-                filteredAircraftOptions={filteredAircraftOptions}
-                showAircraftSuggestions={showAircraftSuggestions}
-                setShowAircraftSuggestions={setShowAircraftSuggestions}
-                addLogEntry={handleAddLogEntry}
-                successMessage={successMessage}
-                clearSuccessMessage={() => setSuccessMessage("")}
+          }
+        />
+        <Route
+          path="/movements"
+          element={
+            <MovementsPage
+              isAdmin={isAdmin}
+              currentUser={currentUser}
+              allHistoryLength={allHistory.length}
+              currentUserHistoryLength={currentUserHistory.length}
+              movementDate={movementDate}
+              setMovementDate={setMovementDate}
+              aircraft={aircraft}
+              setAircraft={setAircraft}
+              movementType={movementType}
+              setMovementType={setMovementType}
+              fromStand={fromStand}
+              setFromStand={setFromStand}
+              toStand={toStand}
+              setToStand={setToStand}
+              notes={notes}
+              setNotes={setNotes}
+              movementTypes={MOVEMENT_TYPES}
+              airportStands={AIRPORT_STANDS}
+              filteredAircraftOptions={filteredAircraftOptions}
+              showAircraftSuggestions={showAircraftSuggestions}
+              setShowAircraftSuggestions={setShowAircraftSuggestions}
+              handleAddLogEntry={handleAddLogEntry}
+              successMessage={successMessage}
+              clearSuccessMessage={() => setSuccessMessage("")}
+            />
+          }
+        />
+        <Route
+          path="/records"
+          element={
+            <RecordsPage
+              isAdmin={isAdmin}
+              allHistoryLength={allHistory.length}
+              currentUserHistoryLength={currentUserHistory.length}
+              paginatedHistory={paginatedHistory}
+              handleDeleteEntry={handleDeleteEntry}
+              handleEditEntry={handleEditEntry}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              tuiAircraftTypes={TUI_AIRCRAFT_TYPES}
+              totalPages={totalPages}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              typeFilteredHistory={typeFilteredHistory}
+              exportLogbook={exportLogbook}
+              selectedUser={selectedUser}
+              setSelectedUser={setSelectedUser}
+              userOptions={userOptions}
+              stats={stats}
+            />
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            isAdmin ? (
+              <UsersPage
+                users={users}
+                history={history}
+                userSummary={userSummary}
+                handleDeleteUser={handleDeleteUser}
+                resetUserPassword={resetUserPassword}
               />
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="bg-white rounded-2xl shadow-lg p-4">
-                <div className="flex items-center justify-between gap-4 flex-wrap">
-                  <div>
-                    <h2 className="text-2xl font-bold text-slate-800">Movement Records</h2>
-                    <div className="text-sm text-slate-500">View all saved records in one place.</div>
-                  </div>
-                  <div className="text-sm text-slate-500">
-                    {isAdmin ? allHistory.length : currentUserHistory.length} records total
-                  </div>
-                </div>
-              </div>
-              <RecordsPanel
-                paginatedHistory={paginatedHistory}
-                deleteEntry={handleDeleteEntry}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                tuiAircraftTypes={tuiAircraftTypes}
-                totalPages={totalPages}
-                currentPage={currentPage}
-                setCurrentPage={setCurrentPage}
-                typeFilteredHistory={typeFilteredHistory}
-                exportLogbook={exportLogbook}
-                isAdmin={isAdmin}
-                selectedUser={selectedUser}
-                setSelectedUser={setSelectedUser}
-                userOptions={userOptions}
-                stats={stats}
-              />
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+      </Route>
+    </Routes>
   );
 }

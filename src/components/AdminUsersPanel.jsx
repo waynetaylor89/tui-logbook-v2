@@ -63,13 +63,13 @@ export default function AdminUsersPanel({ users, history, userSummary, onDeleteU
                   </td>
                   <td className="px-4 py-3 space-y-2 sm:space-y-0 sm:flex sm:items-center sm:gap-2">
                     <button
-                      onClick={() => {
+                      onClick={async () => {
                         const password = passwordInputs[row.username];
                         if (!password || password.trim().length < 3) {
                           alert("Enter a new password with at least 3 characters.");
                           return;
                         }
-                        onResetPassword(row.username, password.trim());
+                        await onResetPassword(row.username, password.trim());
                         setPasswordInputs((prev) => ({ ...prev, [row.username]: "" }));
                       }}
                       className="px-3 py-2 rounded-xl bg-blue-600 text-white text-sm hover:bg-blue-700"

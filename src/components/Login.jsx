@@ -9,7 +9,7 @@ const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames }) => {
   const [recoveryResult, setRecoveryResult] = useState("");
   const [message, setMessage] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
     setRecoveryResult("");
@@ -20,11 +20,11 @@ const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames }) => {
           setMessage("Enter your username to recover the password.");
           return;
         }
-        const passwordResult = onRecoverPassword(username.trim());
+        const passwordResult = await onRecoverPassword(username.trim());
         if (passwordResult) {
           setRecoveryResult(`Password for ${username.trim()}: ${passwordResult}`);
         } else {
-          setRecoveryResult("No user found with that username.");
+          setRecoveryResult("Password recovery is disabled for security. Contact admin for a reset.");
         }
       } else if (forgotMode === "username") {
         const usernames = onListUsernames();
@@ -47,7 +47,7 @@ const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames }) => {
         setMessage("Passwords do not match.");
         return;
       }
-      if (onRegister(username.trim(), password)) {
+      if (await onRegister(username.trim(), password)) {
         setMessage("Registration successful! Please login.");
         setIsRegistering(false);
         setPassword("");
@@ -56,7 +56,7 @@ const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames }) => {
         setMessage("Username already exists.");
       }
     } else {
-      if (onLogin(username.trim(), password)) {
+      if (await onLogin(username.trim(), password)) {
         setMessage("");
       } else {
         setMessage("Invalid username or password.");
@@ -120,7 +120,7 @@ const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames }) => {
             className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {forgotMode
-              ? "Recover Password"
+              ? "Recovery Info"
               : isRegistering
               ? "Register"
               : "Login"}

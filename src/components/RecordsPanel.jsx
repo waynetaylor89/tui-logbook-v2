@@ -1,6 +1,9 @@
+import { useState } from "react";
+
 export default function RecordsPanel({
   paginatedHistory,
   deleteEntry,
+  editEntry,
   searchTerm,
   setSearchTerm,
   activeTab,
@@ -12,11 +15,53 @@ export default function RecordsPanel({
   typeFilteredHistory,
   exportLogbook,
   isAdmin,
+  currentUser,
   selectedUser,
   setSelectedUser,
   userOptions,
   stats,
 }) {
+  const [editingId, setEditingId] = useState(null);
+  const [draft, setDraft] = useState({
+    aircraft: "",
+    movementType: "",
+    fromStand: "",
+    toStand: "",
+    date: "",
+    time: "",
+    notes: "",
+  });
+
+  const startEditing = (item) => {
+    setEditingId(item.id);
+    setDraft({
+      aircraft: item.aircraft || "",
+      movementType: item.movementType || "",
+      fromStand: item.fromStand || "",
+      toStand: item.toStand || "",
+      date: item.date || "",
+      time: item.time || "",
+      notes: item.notes || "",
+    });
+  };
+
+  const cancelEditing = () => {
+    setEditingId(null);
+  };
+
+  const saveEdit = (item) => {
+    const ok = editEntry(item.id, item.createdBy, {
+      aircraft: draft.aircraft.trim(),
+      movementType: draft.movementType.trim(),
+      fromStand: draft.fromStand.trim().toUpperCase(),
+      toStand: draft.toStand.trim().toUpperCase(),
+      date: draft.date.trim(),
+      time: draft.time.trim(),
+      notes: draft.notes.trim(),
+    });
+    if (ok) setEditingId(null);
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4">
 
@@ -121,6 +166,12 @@ export default function RecordsPanel({
         )}
 
         {paginatedHistory.map((item) => {
+          const canModify = isAdmin || item.createdBy === currentUser;
+          const editedLabel =
+            item.updatedAt && item.updatedBy
+              ? `Edited by ${item.updatedBy} on ${new Date(item.updatedAt).toLocaleString()}`
+              : null;
+
           return (
             <div
               key={item.id}
@@ -167,12 +218,96 @@ export default function RecordsPanel({
                 </div>
               )}
 
-              <button
-                onClick={() => deleteEntry(item.id, item.createdBy)}
-                className="w-full mt-3 bg-red-500 text-white py-2 rounded-lg font-semibold"
-              >
-                Delete
-              </button>
+              {editedLabel && (
+                <div className="mt-1 text-xs font-medium text-amber-700 bg-amber-100 inline-block px-2 py-1 rounded">
+                  {editedLabel}
+                </div>
+              )}
+
+              {editingId === item.id ? (
+                <div className="mt-3 space-y-2">
+                  <input
+                    value={draft.aircraft}
+                    onChange={(e) => setDraft((prev) => ({ ...prev, aircraft: e.target.value }))}
+                    className="w-full border rounded-lg px-3 py-2 bg-white"
+                    placeholder="Aircraft"
+                  />
+                  <input
+                    value={draft.movementType}
+                    onChange={(e) => setDraft((prev) => ({ ...prev, movementType: e.target.value }))}
+                    className="w-full border rounded-lg px-3 py-2 bg-white"
+                    placeholder="Movement type"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      value={draft.fromStand}
+                      onChange={(e) => setDraft((prev) => ({ ...prev, fromStand: e.target.value }))}
+                      className="w-full border rounded-lg px-3 py-2 bg-white"
+                      placeholder="From stand"
+                    />
+                    <input
+                      value={draft.toStand}
+                      onChange={(e) => setDraft((prev) => ({ ...prev, toStand: e.target.value }))}
+                      className="w-full border rounded-lg px-3 py-2 bg-white"
+                      placeholder="To stand"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      value={draft.date}
+                      onChange={(e) => setDraft((prev) => ({ ...prev, date: e.target.value }))}
+                      className="w-full border rounded-lg px-3 py-2 bg-white"
+                      placeholder="Date"
+                    />
+                    <input
+                      value={draft.time}
+                      onChange={(e) => setDraft((prev) => ({ ...prev, time: e.target.value }))}
+                      className="w-full border rounded-lg px-3 py-2 bg-white"
+                      placeholder="Time"
+                    />
+                  </div>
+                  <textarea
+                    value={draft.notes}
+                    onChange={(e) => setDraft((prev) => ({ ...prev, notes: e.target.value }))}
+                    className="w-full border rounded-lg px-3 py-2 bg-white resize-none"
+                    rows={2}
+                    placeholder="Notes"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => saveEdit(item)}
+                      className="bg-blue-600 text-white py-2 rounded-lg font-semibold"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={cancelEditing}
+                      className="bg-slate-200 text-slate-800 py-2 rounded-lg font-semibold"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : canModify ? (
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => startEditing(item)}
+                    className="bg-amber-500 text-white py-2 rounded-lg font-semibold"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => deleteEntry(item.id, item.createdBy)}
+                    className="bg-red-500 text-white py-2 rounded-lg font-semibold"
+                  >
+                    Delete
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-3 text-xs text-slate-500 italic">
+                  View only - only the record owner or admin can edit/delete.
+                </div>
+              )}
 
             </div>
           );
