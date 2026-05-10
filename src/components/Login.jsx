@@ -3,22 +3,37 @@ import { useState } from "react";
 const Login = ({ onLogin, onRegister }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
+  const [message, setMessage] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setMessage("");
+
+    if (!username.trim() || !password.trim()) {
+      setMessage("Please enter both username and password.");
+      return;
+    }
+
     if (isRegistering) {
-      if (onRegister(username, password)) {
-        alert("Registration successful! Please login.");
+      if (password !== confirmPassword) {
+        setMessage("Passwords do not match.");
+        return;
+      }
+      if (onRegister(username.trim(), password)) {
+        setMessage("Registration successful! Please login.");
         setIsRegistering(false);
+        setPassword("");
+        setConfirmPassword("");
       } else {
-        alert("Username already exists.");
+        setMessage("Username already exists.");
       }
     } else {
-      if (onLogin(username, password)) {
-        // Login successful
+      if (onLogin(username.trim(), password)) {
+        setMessage("");
       } else {
-        alert("Invalid credentials.");
+        setMessage("Invalid username or password.");
       }
     }
   };
@@ -40,7 +55,7 @@ const Login = ({ onLogin, onRegister }) => {
               required
             />
           </div>
-          <div className="mb-6">
+          <div className="mb-4">
             <label className="block text-gray-700 mb-2">Password</label>
             <input
               type="password"
@@ -50,6 +65,23 @@ const Login = ({ onLogin, onRegister }) => {
               required
             />
           </div>
+          {isRegistering && (
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2">Confirm Password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+          )}
+          {message && (
+            <div className="mb-4 text-sm text-red-600">
+              {message}
+            </div>
+          )}
           <button
             type="submit"
             className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"

@@ -12,7 +12,6 @@ export default function RecordsPanel({
   typeFilteredHistory,
   exportLogbook,
   isAdmin,
-  allHistory,
 }) {
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4">
@@ -90,17 +89,9 @@ export default function RecordsPanel({
         )}
 
         {paginatedHistory.map((item) => {
-
-          const realIndex = typeFilteredHistory.findIndex(
-            (entry) =>
-              entry.date === item.date &&
-              entry.time === item.time &&
-              entry.aircraft === item.aircraft
-          );
-
           return (
             <div
-              key={`${item.aircraft}-${item.date}-${item.time}`}
+              key={item.id}
               className="border rounded-xl p-4 bg-slate-50"
             >
 
@@ -138,8 +129,14 @@ export default function RecordsPanel({
                 </div>
               )}
 
+              {item.createdBy && (
+                <div className="mt-3 text-sm text-slate-500">
+                  Logged by: {item.createdBy}
+                </div>
+              )}
+
               <button
-                onClick={() => deleteEntry(realIndex)}
+                onClick={() => deleteEntry(item.id, item.createdBy)}
                 className="w-full mt-3 bg-red-500 text-white py-2 rounded-lg font-semibold"
               >
                 Delete
