@@ -252,6 +252,16 @@ const exportLogbook = () => {
               Home
             </button>
             <button
+              onClick={() => setActivePage("movements")}
+              className={`px-4 py-2 rounded-xl font-semibold ${
+                activePage === "movements"
+                  ? "bg-blue-600 text-white"
+                  : "bg-slate-100 text-slate-700"
+              }`}
+            >
+              Aircraft Movements
+            </button>
+            <button
               onClick={() => setActivePage("records")}
               className={`px-4 py-2 rounded-xl font-semibold ${
                 activePage === "records"
@@ -288,30 +298,48 @@ const exportLogbook = () => {
                   addAircraftToFleet={addAircraftToFleet}
                 />
 
-                <MovementForm
-                  movementDate={movementDate}
-                  setMovementDate={setMovementDate}
-                  aircraft={aircraft}
-                  setAircraft={setAircraft}
-                  movementType={movementType}
-                  setMovementType={setMovementType}
-                  fromStand={fromStand}
-                  setFromStand={setFromStand}
-                  toStand={toStand}
-                  setToStand={setToStand}
-                  notes={notes}
-                  setNotes={setNotes}
-                  movementTypes={movementTypes}
-                  airportStands={airportStands}
-                  filteredAircraftOptions={filteredAircraftOptions}
-                  showAircraftSuggestions={showAircraftSuggestions}
-                  setShowAircraftSuggestions={setShowAircraftSuggestions}
-                  addLogEntry={addLogEntry}
-                />
-
                 <div className="hidden lg:block"></div>
               </div>
             </>
+          ) : activePage === "movements" ? (
+            <div className="space-y-4">
+              <div className="bg-white rounded-2xl shadow-lg p-4">
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <div>
+                    <h2 className="text-2xl font-bold text-slate-800">
+                      Aircraft Movements
+                    </h2>
+                    <div className="text-sm text-slate-500">
+                      Log new movements here.
+                    </div>
+                  </div>
+                  <div className="text-sm text-slate-500">
+                    {history.length} records total
+                  </div>
+                </div>
+              </div>
+
+              <MovementForm
+                movementDate={movementDate}
+                setMovementDate={setMovementDate}
+                aircraft={aircraft}
+                setAircraft={setAircraft}
+                movementType={movementType}
+                setMovementType={setMovementType}
+                fromStand={fromStand}
+                setFromStand={setFromStand}
+                toStand={toStand}
+                setToStand={setToStand}
+                notes={notes}
+                setNotes={setNotes}
+                movementTypes={movementTypes}
+                airportStands={airportStands}
+                filteredAircraftOptions={filteredAircraftOptions}
+                showAircraftSuggestions={showAircraftSuggestions}
+                setShowAircraftSuggestions={setShowAircraftSuggestions}
+                addLogEntry={addLogEntry}
+              />
+            </div>
           ) : (
             <div className="space-y-4">
               <div className="bg-white rounded-2xl shadow-lg p-4">
