@@ -394,6 +394,22 @@ export default function AircraftMovementLogbook() {
     }
   };
 
+  const addAircraftToFleet = () => {
+    if (!newReg.trim() || !newType) {
+      alert("Please enter both registration and type.");
+      return;
+    }
+    const newAircraft = `${newReg.toUpperCase()} - ${newType}`;
+    if (fleet.includes(newAircraft)) {
+      alert("Aircraft already exists in fleet.");
+      return;
+    }
+    setFleet([...fleet, newAircraft].sort());
+    setNewReg("");
+    setNewType("");
+    setSuccessMessage("Aircraft added to fleet.");
+  };
+
   const addLogEntry = () => {
     if (!aircraft || !fromStand || !toStand) {
       alert("Please complete all required fields.");
