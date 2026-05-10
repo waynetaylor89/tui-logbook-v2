@@ -157,6 +157,11 @@ export default function AircraftMovementLogbook() {
     });
   }, [history, searchTerm, currentUser]);
 
+  const allHistory = useMemo(() => {
+    if (!isAdmin) return [];
+    return Object.values(history).flat();
+  }, [history, isAdmin]);
+
   const typeFilteredHistory = useMemo(() => {
     const baseHistory = isAdmin ? allHistory : filteredHistory;
     if (activeTab === "ALL") return baseHistory;
@@ -204,11 +209,6 @@ export default function AircraftMovementLogbook() {
         .slice(0, 3),
     };
   }, [history, currentUser]);
-
-  const allHistory = useMemo(() => {
-    if (!isAdmin) return [];
-    return Object.values(history).flat();
-  }, [history, isAdmin]);
 
   const login = (username, password) => {
     if (username === "wayne" && password === "admin") {
