@@ -11,6 +11,7 @@ import AdminUsersPanel from "./components/AdminUsersPanel.jsx";
 import { exportLogbookCSV } from "./utils/exportCSV.js";
 
 export default function AircraftMovementLogbook() {
+  console.log('App rendering');
   const airport = "MAN";
 
   const airportStands = {

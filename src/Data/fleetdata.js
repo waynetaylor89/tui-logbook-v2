@@ -36,9 +36,4 @@ export const tuiAircraftTypes = [
 export const initialFleet = [
   "G-TUIA - Boeing 787-8 Dreamliner",
   "G-TUIB - Boeing 787-8 Dreamliner",
-];import {
-  airportStands,
-  movementTypes,
-  tuiAircraftTypes,
-  initialFleet,
-} from "./data/fleetData";
+];
