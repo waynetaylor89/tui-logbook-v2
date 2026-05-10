@@ -12,6 +12,10 @@ export default function RecordsPanel({
   typeFilteredHistory,
   exportLogbook,
   isAdmin,
+  selectedUser,
+  setSelectedUser,
+  userOptions,
+  stats,
 }) {
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4">
@@ -29,6 +33,34 @@ export default function RecordsPanel({
     Export CSV
   </button>
 </div>
+
+      {isAdmin && (
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-slate-600">Filter by user</label>
+            <select
+              value={selectedUser}
+              onChange={(e) => setSelectedUser(e.target.value)}
+              className="rounded-xl border px-4 py-2 bg-white"
+            >
+              {userOptions.map((user) => (
+                <option key={user} value={user}>
+                  {user === "ALL_USERS" ? "All users" : user}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            {stats.topUsers.map(([user, count]) => (
+              <div key={user} className="rounded-2xl border p-3 bg-slate-50">
+                <div className="text-xs uppercase text-slate-500">{user}</div>
+                <div className="text-xl font-semibold text-slate-800">{count}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
         {/* Aircraft Type Tabs */}
         <div className="flex gap-2 flex-wrap">

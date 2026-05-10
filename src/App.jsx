@@ -104,6 +104,7 @@ export default function AircraftMovementLogbook() {
   const [activePage, setActivePage] = useState("home");
   const [activeTab, setActiveTab] = useState("ALL");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedUser, setSelectedUser] = useState("ALL_USERS");
 
   const recordsPerPage = 10;
 
@@ -128,7 +129,7 @@ export default function AircraftMovementLogbook() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeTab, activePage, searchTerm]);
+  }, [activeTab, activePage, searchTerm, selectedUser]);
 
   useEffect(() => {
     localStorage.setItem(
@@ -148,6 +149,11 @@ export default function AircraftMovementLogbook() {
   }, [aircraft, fleet]);
 
   const currentUserHistory = history[currentUser] || [];
+
+  const userOptions = useMemo(() => {
+    const keys = [...Object.keys(users), ...Object.keys(history)];
+    return ["ALL_USERS", ...Array.from(new Set(keys)).filter(Boolean)];
+  }, [history, users]);
 
   const filteredHistory = useMemo(() => {
     return currentUserHistory.filter((entry) => {
@@ -171,13 +177,18 @@ export default function AircraftMovementLogbook() {
   }, [history, isAdmin]);
 
   const typeFilteredHistory = useMemo(() => {
-    const baseHistory = isAdmin ? allHistory : filteredHistory;
+    let baseHistory = isAdmin ? allHistory : filteredHistory;
+    if (isAdmin && selectedUser !== "ALL_USERS") {
+      baseHistory = baseHistory.filter(
+        (entry) => entry.createdBy === selectedUser
+      );
+    }
     if (activeTab === "ALL") return baseHistory;
 
     return baseHistory.filter((entry) =>
       entry.aircraft.includes(activeTab)
     );
-  }, [filteredHistory, activeTab, isAdmin, allHistory]);
+  }, [filteredHistory, activeTab, isAdmin, allHistory, selectedUser]);
 
   const totalPages = Math.max(
     1,
@@ -215,8 +226,31 @@ export default function AircraftMovementLogbook() {
       topStands: Object.entries(standCounts)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 3),
+      topUsers: isAdmin
+        ? Object.entries(
+            baseHistory.reduce((acc, entry) => {
+              acc[entry.createdBy] = (acc[entry.createdBy] || 0) + 1;
+              return acc;
+            }, {})
+          )
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3)
+        : [],
+      userCount: isAdmin ? Object.keys(users).length : 0,
     };
-  }, [allHistory, currentUserHistory, isAdmin]);
+  }, [allHistory, currentUserHistory, isAdmin, users]);
+
+  const userSummary = useMemo(() => {
+    if (!isAdmin) return [];
+
+    return Object.entries(history)
+      .filter(([username]) => username)
+      .map(([username, entries]) => ({
+        username,
+        movements: (entries || []).length,
+      }))
+      .sort((a, b) => b.movements - a.movements);
+  }, [history, isAdmin]);
 
   const login = (username, password) => {
     if (username === "wayne" && password === "admin") {
@@ -238,6 +272,14 @@ export default function AircraftMovementLogbook() {
     if (users[username]) return false;
     setUsers({ ...users, [username]: { password } });
     return true;
+  };
+
+  const recoverPassword = (username) => {
+    return users[username] ? users[username].password : null;
+  };
+
+  const listUsernames = () => {
+    return Object.keys(users).filter(Boolean);
   };
 
   const addAircraftToFleet = () => {
@@ -306,7 +348,14 @@ const exportLogbook = () => {
 };
 
   if (!currentUser) {
-    return <Login onLogin={login} onRegister={register} />;
+    return (
+      <Login
+        onLogin={login}
+        onRegister={register}
+        onRecoverPassword={recoverPassword}
+        onListUsernames={listUsernames}
+      />
+    );
   }
 
   return (
@@ -362,6 +411,42 @@ const exportLogbook = () => {
                 </div>
 
                 <StatsCards stats={stats} />
+
+                {isAdmin && userSummary.length > 0 && (
+                  <div className="bg-white rounded-2xl shadow-lg p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="text-xl font-bold text-slate-800">
+                          User Movement Summary
+                        </h3>
+                        <div className="text-sm text-slate-500">
+                          Ranked by total movements logged.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full text-left text-sm text-slate-700">
+                        <thead>
+                          <tr>
+                            <th className="px-4 py-3 font-medium text-slate-500">User</th>
+                            <th className="px-4 py-3 font-medium text-slate-500">Movements</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {userSummary.map((row) => (
+                            <tr key={row.username} className="border-t">
+                              <td className="px-4 py-3">{row.username}</td>
+                              <td className="px-4 py-3 font-semibold text-slate-800">
+                                {row.movements}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="grid lg:grid-cols-3 gap-4">
@@ -448,6 +533,10 @@ const exportLogbook = () => {
                 typeFilteredHistory={typeFilteredHistory}
                 exportLogbook={exportLogbook}
                 isAdmin={isAdmin}
+                selectedUser={selectedUser}
+                setSelectedUser={setSelectedUser}
+                userOptions={userOptions}
+                stats={stats}
               />
             </div>
           )}
