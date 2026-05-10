@@ -88,6 +88,7 @@ export default function AircraftMovementLogbook() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState("ALL");
+  const [activePage, setActivePage] = useState("home");
 
   const recordsPerPage = 10;
 
@@ -231,6 +232,7 @@ export default function AircraftMovementLogbook() {
 const exportLogbook = () => {
   exportLogbookCSV(typeFilteredHistory);
 };
+
   return (
     <div className="min-h-screen bg-sky-200">
       <div className="min-h-screen bg-sky-100 p-3 lg:p-6">
@@ -238,72 +240,113 @@ const exportLogbook = () => {
 
           <Header fleetCount={fleet.length} />
 
-{/* Stats Section */}
-<div className="space-y-2">
-
-  <div className="flex items-center justify-between">
-    <h2 className="text-2xl font-bold text-slate-800">
-      Statistics Overview
-    </h2>
-
-    <div className="text-sm text-slate-500">
-      Live movement tracking
-    </div>
-  </div>
-
-  <StatsCards stats={stats} />
-
-</div>
-
-{/* Main Grid */}
-<div className="grid lg:grid-cols-3 gap-4">
-
-            <FleetManager
-              newReg={newReg}
-              setNewReg={setNewReg}
-              newType={newType}
-              setNewType={setNewType}
-              tuiAircraftTypes={tuiAircraftTypes}
-              addAircraftToFleet={addAircraftToFleet}
-            />
-
-            <MovementForm
-              movementDate={movementDate}
-              setMovementDate={setMovementDate}
-              aircraft={aircraft}
-              setAircraft={setAircraft}
-              movementType={movementType}
-              setMovementType={setMovementType}
-              fromStand={fromStand}
-              setFromStand={setFromStand}
-              toStand={toStand}
-              setToStand={setToStand}
-              notes={notes}
-              setNotes={setNotes}
-              movementTypes={movementTypes}
-              airportStands={airportStands}
-              filteredAircraftOptions={filteredAircraftOptions}
-              showAircraftSuggestions={showAircraftSuggestions}
-              setShowAircraftSuggestions={setShowAircraftSuggestions}
-              addLogEntry={addLogEntry}
-              exportLogbook={exportLogbook}
-            />
-
-            <RecordsPanel
-              paginatedHistory={paginatedHistory}
-              deleteEntry={deleteEntry}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              tuiAircraftTypes={tuiAircraftTypes}
-              totalPages={totalPages}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              typeFilteredHistory={typeFilteredHistory}
-            />
-
+          <div className="bg-white rounded-2xl shadow-lg p-4 flex flex-wrap gap-2">
+            <button
+              onClick={() => setActivePage("home")}
+              className={`px-4 py-2 rounded-xl font-semibold ${
+                activePage === "home"
+                  ? "bg-blue-600 text-white"
+                  : "bg-slate-100 text-slate-700"
+              }`}
+            >
+              Home
+            </button>
+            <button
+              onClick={() => setActivePage("records")}
+              className={`px-4 py-2 rounded-xl font-semibold ${
+                activePage === "records"
+                  ? "bg-blue-600 text-white"
+                  : "bg-slate-100 text-slate-700"
+              }`}
+            >
+              Movement Records
+            </button>
           </div>
+
+          {activePage === "home" ? (
+            <>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-slate-800">
+                    Statistics Overview
+                  </h2>
+                  <div className="text-sm text-slate-500">
+                    Live movement tracking
+                  </div>
+                </div>
+
+                <StatsCards stats={stats} />
+              </div>
+
+              <div className="grid lg:grid-cols-3 gap-4">
+                <FleetManager
+                  newReg={newReg}
+                  setNewReg={setNewReg}
+                  newType={newType}
+                  setNewType={setNewType}
+                  tuiAircraftTypes={tuiAircraftTypes}
+                  addAircraftToFleet={addAircraftToFleet}
+                />
+
+                <MovementForm
+                  movementDate={movementDate}
+                  setMovementDate={setMovementDate}
+                  aircraft={aircraft}
+                  setAircraft={setAircraft}
+                  movementType={movementType}
+                  setMovementType={setMovementType}
+                  fromStand={fromStand}
+                  setFromStand={setFromStand}
+                  toStand={toStand}
+                  setToStand={setToStand}
+                  notes={notes}
+                  setNotes={setNotes}
+                  movementTypes={movementTypes}
+                  airportStands={airportStands}
+                  filteredAircraftOptions={filteredAircraftOptions}
+                  showAircraftSuggestions={showAircraftSuggestions}
+                  setShowAircraftSuggestions={setShowAircraftSuggestions}
+                  addLogEntry={addLogEntry}
+                />
+
+                <div className="hidden lg:block"></div>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-4">
+              <div className="bg-white rounded-2xl shadow-lg p-4">
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <div>
+                    <h2 className="text-2xl font-bold text-slate-800">
+                      Movement Records
+                    </h2>
+                    <div className="text-sm text-slate-500">
+                      View all saved records in one place.
+                    </div>
+                  </div>
+                  <div className="text-sm text-slate-500">
+                    {history.length} records total
+                  </div>
+                </div>
+              </div>
+
+              <RecordsPanel
+                paginatedHistory={paginatedHistory}
+                deleteEntry={deleteEntry}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                tuiAircraftTypes={tuiAircraftTypes}
+                totalPages={totalPages}
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                typeFilteredHistory={typeFilteredHistory}
+                exportLogbook={exportLogbook}
+              />
+            </div>
+          )}
+
         </div>
       </div>
     </div>

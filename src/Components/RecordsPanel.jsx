@@ -10,6 +10,7 @@ export default function RecordsPanel({
   currentPage,
   setCurrentPage,
   typeFilteredHistory,
+  exportLogbook,
 }) {
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4">
@@ -20,6 +21,12 @@ export default function RecordsPanel({
   <h2 className="text-2xl font-bold text-slate-800">
     Movement Records
   </h2>
+  <button
+    onClick={exportLogbook}
+    className="px-4 py-2 rounded-xl bg-emerald-600 text-white font-semibold"
+  >
+    Export CSV
+  </button>
 </div>
 
         {/* Aircraft Type Tabs */}

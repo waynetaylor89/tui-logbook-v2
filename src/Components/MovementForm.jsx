@@ -17,7 +17,6 @@ export default function MovementForm({
   showAircraftSuggestions,
   setShowAircraftSuggestions,
   addLogEntry,
-  exportLogbook,
 }) {
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 space-y-4">
@@ -128,13 +127,6 @@ export default function MovementForm({
         className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold"
       >
         Add Movement
-      </button>
-
-      <button
-        onClick={exportLogbook}
-        className="w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold"
-      >
-        Export CSV
       </button>
 
     </div>
