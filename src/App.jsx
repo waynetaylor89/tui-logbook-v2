@@ -5,6 +5,7 @@ import Login from "./components/Login.jsx";
 import FleetManager from "./components/FleetManager.jsx";
 import MovementForm from "./components/MovementForm.jsx";
 import RecordsPanel from "./components/RecordsPanel.jsx";
+import StatsCards from "./components/StatsCards.jsx";
 
 import { exportLogbookCSV } from "./utils/exportCSV.js";
 
@@ -97,6 +98,10 @@ export default function AircraftMovementLogbook() {
 
   const [isAdmin, setIsAdmin] = useState(false);
 
+  const [activePage, setActivePage] = useState("home");
+  const [activeTab, setActiveTab] = useState("ALL");
+  const [currentPage, setCurrentPage] = useState(1);
+
   const recordsPerPage = 10;
 
   useEffect(() => {
@@ -113,6 +118,10 @@ export default function AircraftMovementLogbook() {
   useEffect(() => {
     localStorage.setItem("users", JSON.stringify(users));
   }, [users]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, activePage, searchTerm]);
 
   useEffect(() => {
     localStorage.setItem(
@@ -224,6 +233,20 @@ export default function AircraftMovementLogbook() {
     if (users[username]) return false;
     setUsers({ ...users, [username]: { password, history: [] } });
     return true;
+  };
+
+  const addAircraftToFleet = () => {
+    if (!newReg || !newType) {
+      alert("Please enter both registration and aircraft type.");
+      return;
+    }
+
+    const formattedAircraft = `${newReg.toUpperCase()} - ${newType}`;
+
+    setFleet([...new Set([...fleet, formattedAircraft])].sort());
+
+    setNewReg("");
+    setNewType("");
   };
 
   const addLogEntry = () => {
@@ -354,7 +377,7 @@ const exportLogbook = () => {
                     </div>
                   </div>
                   <div className="text-sm text-slate-500">
-                    {history.length} records total
+                    {isAdmin ? allHistory.length : (history[currentUser] || []).length} records total
                   </div>
                 </div>
               </div>
@@ -393,7 +416,7 @@ const exportLogbook = () => {
                     </div>
                   </div>
                   <div className="text-sm text-slate-500">
-                    {history.length} records total
+                    {isAdmin ? allHistory.length : (history[currentUser] || []).length} records total
                   </div>
                 </div>
               </div>
