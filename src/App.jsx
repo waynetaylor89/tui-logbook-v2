@@ -57,9 +57,19 @@ export default function AircraftMovementLogbook() {
     "G-TUIK - Boeing 787-9 Dreamliner",
     "G-TUIL - Boeing 787-9 Dreamliner",
     "G-TUIM - Boeing 787-9 Dreamliner",
+    "G-TUIN - Boeing 787-9 Dreamliner",
+    "G-TUIO - Boeing 787-9 Dreamliner",
+    "G-TUIP - Boeing 787-9 Dreamliner",
     "G-TUKA - Boeing 737 MAX 8",
     "G-TUKB - Boeing 737 MAX 8",
     "G-TUKC - Boeing 737 MAX 8",
+    "G-TUKD - Boeing 737 MAX 8",
+    "G-TUKE - Boeing 737 MAX 8",
+    "G-TUKF - Boeing 737 MAX 8",
+    "G-TUKG - Boeing 737 MAX 8",
+    "G-TUKH - Boeing 737 MAX 8",
+    "G-TUKI - Boeing 737 MAX 8",
+    "G-TUKJ - Boeing 737 MAX 8",
   ].sort();
 
   const [fleet, setFleet] = useState(() => {
@@ -87,6 +97,7 @@ export default function AircraftMovementLogbook() {
 
   const [newReg, setNewReg] = useState("");
   const [newType, setNewType] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const [currentUser, setCurrentUser] = useState(() => {
     const savedCurrentUser = localStorage.getItem("currentUser");
@@ -131,6 +142,12 @@ export default function AircraftMovementLogbook() {
   useEffect(() => {
     setCurrentPage(1);
   }, [activeTab, activePage, searchTerm, selectedUser]);
+
+  useEffect(() => {
+    if (!successMessage) return;
+    const timeout = setTimeout(() => setSuccessMessage(""), 5000);
+    return () => clearTimeout(timeout);
+  }, [successMessage]);
 
   useEffect(() => {
     localStorage.setItem(
@@ -358,6 +375,7 @@ export default function AircraftMovementLogbook() {
     setToStand("");
     setNotes("");
     setMovementType("Tow");
+    setSuccessMessage("Movement added successfully.");
   };
 
  const deleteEntry = (id, owner) => {
@@ -549,6 +567,8 @@ const exportLogbook = () => {
                 showAircraftSuggestions={showAircraftSuggestions}
                 setShowAircraftSuggestions={setShowAircraftSuggestions}
                 addLogEntry={addLogEntry}
+                successMessage={successMessage}
+                clearSuccessMessage={() => setSuccessMessage("")}
               />
             </div>
           ) : (
