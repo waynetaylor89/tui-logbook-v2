@@ -6,6 +6,7 @@ import FleetManager from "./components/FleetManager.jsx";
 import MovementForm from "./components/MovementForm.jsx";
 import RecordsPanel from "./components/RecordsPanel.jsx";
 import StatsCards from "./components/StatsCards.jsx";
+import AdminUsersPanel from "./components/AdminUsersPanel.jsx";
 
 import { exportLogbookCSV } from "./utils/exportCSV.js";
 
@@ -282,6 +283,35 @@ export default function AircraftMovementLogbook() {
     return Object.keys(users).filter(Boolean);
   };
 
+  const deleteUser = (username) => {
+    if (!username || username === "wayne") return;
+    if (!window.confirm(`Delete user ${username} and all associated records?`)) {
+      return;
+    }
+    const updatedUsers = { ...users };
+    delete updatedUsers[username];
+
+    const updatedHistory = { ...history };
+    delete updatedHistory[username];
+
+    setUsers(updatedUsers);
+    setHistory(updatedHistory);
+    if (selectedUser === username) {
+      setSelectedUser("ALL_USERS");
+    }
+  };
+
+  const resetUserPassword = (username, newPassword) => {
+    if (!username || !newPassword) return false;
+    if (!users[username]) return false;
+
+    setUsers({
+      ...users,
+      [username]: { password: newPassword },
+    });
+    return true;
+  };
+
   const addAircraftToFleet = () => {
     if (!newReg || !newType) {
       alert("Please enter both registration and aircraft type.");
@@ -394,6 +424,18 @@ const exportLogbook = () => {
             >
               Movement Records
             </button>
+            {isAdmin && (
+              <button
+                onClick={() => setActivePage("users")}
+                className={`px-4 py-2 rounded-xl font-semibold ${
+                  activePage === "users"
+                    ? "bg-blue-600 text-white"
+                    : "bg-slate-100 text-slate-700"
+                }`}
+              >
+                Manage Users
+              </button>
+            )}
           </div>
 
           <Header fleetCount={fleet.length} currentUser={currentUser} isAdmin={isAdmin} onLogout={logout} />
@@ -462,6 +504,14 @@ const exportLogbook = () => {
                 <div className="hidden lg:block"></div>
               </div>
             </>
+          ) : activePage === "users" ? (
+            <AdminUsersPanel
+              users={users}
+              history={history}
+              userSummary={userSummary}
+              onDeleteUser={deleteUser}
+              onResetPassword={resetUserPassword}
+            />
           ) : activePage === "movements" ? (
             <div className="space-y-4">
               <div className="bg-white rounded-2xl shadow-lg p-4">
