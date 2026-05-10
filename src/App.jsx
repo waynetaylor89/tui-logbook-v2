@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
 
-import Header from "./components/Header";
-import StatsCards from "./components/StatsCards";
-import FleetManager from "./components/FleetManager";
-import MovementForm from "./components/MovementForm";
-import RecordsPanel from "./components/RecordsPanel";
+import Header from "./components/Header.jsx";
+import StatsCards from "./components/StatsCards.jsx";
+import FleetManager from "./components/FleetManager.jsx";
+import MovementForm from "./components/MovementForm.jsx";
+import RecordsPanel from "./components/RecordsPanel.jsx";
 
-import { exportLogbookCSV } from "./utils/exportCSV";
+import { exportLogbookCSV } from "./utils/exportCSV.js";
 
 export default function AircraftMovementLogbook() {
   const airport = "MAN";
