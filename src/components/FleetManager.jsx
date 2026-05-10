@@ -5,6 +5,7 @@ export default function FleetManager({
   setNewType,
   tuiAircraftTypes,
   addAircraftToFleet,
+  resetFleet,
 }) {
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 space-y-4">
@@ -43,6 +44,13 @@ export default function FleetManager({
         className="w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold"
       >
         Add Aircraft
+      </button>
+
+      <button
+        onClick={resetFleet}
+        className="w-full bg-red-600 text-white py-3 rounded-xl font-semibold"
+      >
+        Reset Fleet to Default
       </button>
 
     </div>

@@ -387,18 +387,10 @@ export default function AircraftMovementLogbook() {
     return true;
   };
 
-  const addAircraftToFleet = () => {
-    if (!newReg || !newType) {
-      alert("Please enter both registration and aircraft type.");
-      return;
+  const resetFleet = () => {
+    if (window.confirm("Reset fleet to default TUI Airways list? This will remove any custom additions.")) {
+      setFleet(initialFleet);
     }
-
-    const formattedAircraft = `${newReg.toUpperCase()} - ${newType}`;
-
-    setFleet([...new Set([...fleet, formattedAircraft])].sort());
-
-    setNewReg("");
-    setNewType("");
   };
 
   const addLogEntry = () => {
@@ -575,6 +567,7 @@ const exportLogbook = () => {
                   setNewType={setNewType}
                   tuiAircraftTypes={tuiAircraftTypes}
                   addAircraftToFleet={addAircraftToFleet}
+                  resetFleet={resetFleet}
                 />
 
                 <div className="hidden lg:block"></div>
