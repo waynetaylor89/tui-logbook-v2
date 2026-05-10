@@ -1,5 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
-
+import { useEffect, useMemo, useState } from "react";
 import Header from "./components/Header.jsx";
 import Login from "./components/Login.jsx";
 import FleetManager from "./components/FleetManager.jsx";
@@ -7,39 +6,17 @@ import MovementForm from "./components/MovementForm.jsx";
 import RecordsPanel from "./components/RecordsPanel.jsx";
 import StatsCards from "./components/StatsCards.jsx";
 import AdminUsersPanel from "./components/AdminUsersPanel.jsx";
-
 import { exportLogbookCSV } from "./utils/exportCSV.js";
+import useLogbookStore from "./store/useLogbookStore.js";
 
 export default function AircraftMovementLogbook() {
-  console.log('App rendering');
   const airport = "MAN";
 
   const airportStands = {
-    MAN: [
-      "1",
-      "2",
-      "5",
-      "12",
-      "20",
-      "21",
-      "22",
-      "23",
-      "24",
-      "25",
-      "R1",
-      "R2",
-      "R3",
-    ],
+    MAN: ["1", "2", "5", "12", "20", "21", "22", "23", "24", "25", "R1", "R2", "R3"],
   };
 
-  const movementTypes = [
-    "Tow",
-    "Power Move",
-    "Engineering",
-    "Remote Stand",
-    "Night Stop",
-  ];
-
+  const movementTypes = ["Tow", "Power Move", "Engineering", "Remote Stand", "Night Stop"];
   const tuiAircraftTypes = [
     "Boeing 737-800",
     "Boeing 737 MAX 8",
@@ -47,156 +24,45 @@ export default function AircraftMovementLogbook() {
     "Boeing 787-9 Dreamliner",
   ];
 
-  const initialFleet = [
-    "G-FDZD - Boeing 737-800",
-    "G-FDZR - Boeing 737-800",
-    "G-FDZS - Boeing 737-800",
-    "G-FDZX - Boeing 737-800",
-    "G-FDZY - Boeing 737-800",
-    "G-FDZZ - Boeing 737-800",
-    "G-TAWA - Boeing 737-800",
-    "G-TAWB - Boeing 737-800",
-    "G-TAWC - Boeing 737-800",
-    "G-TAWD - Boeing 737-800",
-    "G-TAWG - Boeing 737-800",
-    "G-TAWI - Boeing 737-800",
-    "G-TAWK - Boeing 737-800",
-    "G-TAWM - Boeing 737-800",
-    "G-TAWO - Boeing 737-800",
-    "G-TAWP - Boeing 737-800",
-    "G-TAWS - Boeing 737-800",
-    "G-TAWU - Boeing 737-800",
-    "G-TAWV - Boeing 737-800",
-    "G-TAWW - Boeing 737-800",
-    "G-TAWX - Boeing 737-800",
-    "G-TAWY - Boeing 737-800",
-    "G-TAWZ - Boeing 737-800",
-    "G-TUIA - Boeing 787-8 Dreamliner",
-    "G-TUIB - Boeing 787-8 Dreamliner",
-    "G-TUIC - Boeing 787-8 Dreamliner",
-    "G-TUIE - Boeing 787-8 Dreamliner",
-    "G-TUIF - Boeing 787-8 Dreamliner",
-    "G-TUIH - Boeing 787-8 Dreamliner",
-    "G-TUII - Boeing 787-8 Dreamliner",
-    "G-TUIJ - Boeing 787-9 Dreamliner",
-    "G-TUIL - Boeing 787-9 Dreamliner",
-    "G-TUIM - Boeing 787-9 Dreamliner",
-    "G-TUIN - Boeing 787-9 Dreamliner",
-    "G-TUIO - Boeing 787-9 Dreamliner",
-    "G-TUIP - Boeing 787-8 Dreamliner",
-    "G-TUKF - Boeing 737-800",
-    "G-TUKR - Boeing 737-800",
-    "G-TUKS - Boeing 737-800",
-    "G-TUKT - Boeing 737-800",
-    "G-TUKW - Boeing 737-800",
-    "G-TUMA - Boeing 737 MAX 8",
-    "G-TUMB - Boeing 737 MAX 8",
-    "G-TUMC - Boeing 737 MAX 8",
-    "G-TUMD - Boeing 737 MAX 8",
-    "G-TUMF - Boeing 737 MAX 8",
-    "G-TUMH - Boeing 737 MAX 8",
-    "G-TUMK - Boeing 737 MAX 8",
-    "G-TUML - Boeing 737 MAX 8",
-    "G-TUMM - Boeing 737 MAX 8",
-    "G-TUMN - Boeing 737 MAX 8",
-    "G-TUMO - Boeing 737 MAX 8",
-    "G-TUMP - Boeing 737 MAX 8",
-    "G-TUMS - Boeing 737 MAX 8",
-    "G-TUMT - Boeing 737 MAX 8",
-    "G-TUMU - Boeing 737 MAX 8",
-    "G-TUMW - Boeing 737 MAX 8",
-    "G-TUMX - Boeing 737 MAX 8",
-    "G-TUMY - Boeing 737 MAX 8",
-    "G-TUMZ - Boeing 737 MAX 8",
-    "G-TUOA - Boeing 737 MAX 8",
-    "G-TUOB - Boeing 737 MAX 8",
-    "G-TUOD - Boeing 737 MAX 8",
-    "G-TUPA - Boeing 737 MAX 8",
-    "G-TUPB - Boeing 737 MAX 8",
-    "G-TUPC - Boeing 737 MAX 8",
-    "G-TUPD - Boeing 737 MAX 8",
-    "G-TUPE - Boeing 737 MAX 8",
-    "G-TUPF - Boeing 737 MAX 8",
-    "G-TUPH - Boeing 737 MAX 8",
-  ].sort();
-
-  const [fleet, setFleet] = useState(() => {
-    const savedFleet = localStorage.getItem("aircraft-logbook-fleet");
-    if (savedFleet) {
-      try {
-        const parsedFleet = JSON.parse(savedFleet);
-        const mergedFleet = Array.from(
-          new Set([...(parsedFleet || []), ...initialFleet])
-        ).sort();
-        return mergedFleet;
-      } catch {
-        return initialFleet;
-      }
-    }
-    return initialFleet;
-  });
-
-  const [history, setHistory] = useState(() => {
-    const savedHistory = localStorage.getItem("aircraft-logbook-history");
-    return savedHistory ? JSON.parse(savedHistory) : {};
-  });
-
-  const [aircraft, setAircraft] = useState("");
-  const [movementType, setMovementType] = useState("Tow");
-  const [fromStand, setFromStand] = useState("");
-  const [toStand, setToStand] = useState("");
-  const [notes, setNotes] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showAircraftSuggestions, setShowAircraftSuggestions] =
-    useState(false);
-
-  const [movementDate, setMovementDate] = useState(() => {
-    return new Date().toISOString().split("T")[0];
-  });
-
-  const [newReg, setNewReg] = useState("");
-  const [newType, setNewType] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-
-  const [currentUser, setCurrentUser] = useState(() => {
-    const savedCurrentUser = localStorage.getItem("currentUser");
-    return savedCurrentUser && savedCurrentUser !== "null"
-      ? savedCurrentUser
-      : null;
-  });
-
-  const [users, setUsers] = useState(() => {
-    const savedUsers = localStorage.getItem("users");
-    return savedUsers ? JSON.parse(savedUsers) : {};
-  });
+  const {
+    fleet,
+    history,
+    users,
+    currentUser,
+    addAircraftToFleet: addAircraftToFleetInStore,
+    resetFleet: resetFleetInStore,
+    addLogEntry: addLogEntryInStore,
+    deleteEntry: deleteEntryInStore,
+    login,
+    logout,
+    register,
+    recoverPassword,
+    listUsernames,
+    deleteUser: deleteUserInStore,
+    resetUserPassword,
+  } = useLogbookStore();
 
   const isAdmin = currentUser === "wayne";
 
   const [activePage, setActivePage] = useState("home");
   const [activeTab, setActiveTab] = useState("ALL");
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedUser, setSelectedUser] = useState("ALL_USERS");
 
+  const [movementDate, setMovementDate] = useState(new Date().toISOString().slice(0, 10));
+  const [aircraft, setAircraft] = useState("");
+  const [movementType, setMovementType] = useState("Tow");
+  const [fromStand, setFromStand] = useState("");
+  const [toStand, setToStand] = useState("");
+  const [notes, setNotes] = useState("");
+  const [showAircraftSuggestions, setShowAircraftSuggestions] = useState(false);
+
+  const [newReg, setNewReg] = useState("");
+  const [newType, setNewType] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+
   const recordsPerPage = 10;
-
-  useEffect(() => {
-    localStorage.setItem(
-      "aircraft-logbook-history",
-      JSON.stringify(history)
-    );
-  }, [history]);
-
-  useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem("currentUser", currentUser);
-    } else {
-      localStorage.removeItem("currentUser");
-    }
-  }, [currentUser]);
-
-  useEffect(() => {
-    localStorage.setItem("users", JSON.stringify(users));
-  }, [users]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -208,24 +74,15 @@ export default function AircraftMovementLogbook() {
     return () => clearTimeout(timeout);
   }, [successMessage]);
 
-  useEffect(() => {
-    localStorage.setItem(
-      "aircraft-logbook-fleet",
-      JSON.stringify(fleet)
-    );
-  }, [fleet]);
-
   const filteredAircraftOptions = useMemo(() => {
     if (!aircraft.trim()) return fleet.slice(0, 12);
-
-    return fleet
-      .filter((plane) =>
-        plane.toLowerCase().includes(aircraft.toLowerCase())
-      )
-      .slice(0, 12);
+    return fleet.filter((plane) => plane.toLowerCase().includes(aircraft.toLowerCase())).slice(0, 12);
   }, [aircraft, fleet]);
 
-  const currentUserHistory = history[currentUser] || [];
+  const currentUserHistory = useMemo(() => {
+    if (!currentUser) return [];
+    return history[currentUser] || [];
+  }, [currentUser, history]);
 
   const userOptions = useMemo(() => {
     const keys = [...Object.keys(users), ...Object.keys(history)];
@@ -234,17 +91,8 @@ export default function AircraftMovementLogbook() {
 
   const filteredHistory = useMemo(() => {
     return currentUserHistory.filter((entry) => {
-      const searchable = `
-        ${entry.aircraft}
-        ${entry.fromStand}
-        ${entry.toStand}
-        ${entry.movementType}
-        ${entry.notes}
-      `;
-
-      return searchable
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+      const searchable = `${entry.aircraft} ${entry.fromStand} ${entry.toStand} ${entry.movementType} ${entry.notes || ""}`;
+      return searchable.toLowerCase().includes(searchTerm.toLowerCase());
     });
   }, [currentUserHistory, searchTerm]);
 
@@ -256,26 +104,14 @@ export default function AircraftMovementLogbook() {
   const typeFilteredHistory = useMemo(() => {
     let baseHistory = isAdmin ? allHistory : filteredHistory;
     if (isAdmin && selectedUser !== "ALL_USERS") {
-      baseHistory = baseHistory.filter(
-        (entry) => entry.createdBy === selectedUser
-      );
+      baseHistory = baseHistory.filter((entry) => entry.createdBy === selectedUser);
     }
     if (activeTab === "ALL") return baseHistory;
+    return baseHistory.filter((entry) => entry.aircraft.includes(activeTab));
+  }, [activeTab, allHistory, filteredHistory, isAdmin, selectedUser]);
 
-    return baseHistory.filter((entry) =>
-      entry.aircraft.includes(activeTab)
-    );
-  }, [filteredHistory, activeTab, isAdmin, allHistory, selectedUser]);
-
-  const totalPages = Math.max(
-    1,
-    Math.ceil(typeFilteredHistory.length / recordsPerPage)
-  );
-
-  const paginatedHistory = typeFilteredHistory.slice(
-    (currentPage - 1) * recordsPerPage,
-    currentPage * recordsPerPage
-  );
+  const totalPages = Math.max(1, Math.ceil(typeFilteredHistory.length / recordsPerPage));
+  const paginatedHistory = typeFilteredHistory.slice((currentPage - 1) * recordsPerPage, currentPage * recordsPerPage);
 
   const stats = useMemo(() => {
     const baseHistory = isAdmin ? allHistory : currentUserHistory;
@@ -283,26 +119,15 @@ export default function AircraftMovementLogbook() {
     const standCounts = {};
 
     baseHistory.forEach((entry) => {
-      aircraftCounts[entry.aircraft] =
-        (aircraftCounts[entry.aircraft] || 0) + 1;
-
-      standCounts[entry.fromStand] =
-        (standCounts[entry.fromStand] || 0) + 1;
-
-      standCounts[entry.toStand] =
-        (standCounts[entry.toStand] || 0) + 1;
+      aircraftCounts[entry.aircraft] = (aircraftCounts[entry.aircraft] || 0) + 1;
+      standCounts[entry.fromStand] = (standCounts[entry.fromStand] || 0) + 1;
+      standCounts[entry.toStand] = (standCounts[entry.toStand] || 0) + 1;
     });
 
     return {
       totalMovements: baseHistory.length,
-
-      topAircraft: Object.entries(aircraftCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 3),
-
-      topStands: Object.entries(standCounts)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 3),
+      topAircraft: Object.entries(aircraftCounts).sort((a, b) => b[1] - a[1]).slice(0, 3),
+      topStands: Object.entries(standCounts).sort((a, b) => b[1] - a[1]).slice(0, 3),
       topUsers: isAdmin
         ? Object.entries(
             baseHistory.reduce((acc, entry) => {
@@ -319,7 +144,6 @@ export default function AircraftMovementLogbook() {
 
   const userSummary = useMemo(() => {
     if (!isAdmin) return [];
-
     return Object.entries(history)
       .filter(([username]) => username)
       .map(([username, entries]) => ({
@@ -329,72 +153,14 @@ export default function AircraftMovementLogbook() {
       .sort((a, b) => b.movements - a.movements);
   }, [history, isAdmin]);
 
-  const login = (username, password) => {
-    if (username === "wayne" && password === "admin") {
-      setCurrentUser(username);
-      return true;
-    }
-    if (users[username] && users[username].password === password) {
-      setCurrentUser(username);
-      return true;
-    }
-    return false;
-  };
-
-  const logout = () => {
-    setCurrentUser(null);
-  };
-
-  const register = (username, password) => {
-    if (users[username]) return false;
-    setUsers({ ...users, [username]: { password } });
-    return true;
-  };
-
-  const recoverPassword = (username) => {
-    return users[username] ? users[username].password : null;
-  };
-
-  const listUsernames = () => {
-    return Object.keys(users).filter(Boolean);
-  };
-
-  const deleteUser = (username) => {
-    if (!username || username === "wayne") return;
-    if (!window.confirm(`Delete user ${username} and all associated records?`)) {
-      return;
-    }
-    const updatedUsers = { ...users };
-    delete updatedUsers[username];
-
-    const updatedHistory = { ...history };
-    delete updatedHistory[username];
-
-    setUsers(updatedUsers);
-    setHistory(updatedHistory);
-    if (selectedUser === username) {
-      setSelectedUser("ALL_USERS");
-    }
-  };
-
-  const resetUserPassword = (username, newPassword) => {
-    if (!username || !newPassword) return false;
-    if (!users[username]) return false;
-
-    setUsers({
-      ...users,
-      [username]: { password: newPassword },
-    });
-    return true;
-  };
-
-  const resetFleet = () => {
+  const handleResetFleet = () => {
     if (window.confirm("Reset fleet to default TUI Airways list? This will remove any custom additions.")) {
-      setFleet(initialFleet);
+      resetFleetInStore();
+      setSuccessMessage("Fleet reset to default.");
     }
   };
 
-  const addAircraftToFleet = () => {
+  const handleAddAircraftToFleet = () => {
     if (!newReg.trim() || !newType) {
       alert("Please enter both registration and type.");
       return;
@@ -404,18 +170,17 @@ export default function AircraftMovementLogbook() {
       alert("Aircraft already exists in fleet.");
       return;
     }
-    setFleet([...fleet, newAircraft].sort());
+    addAircraftToFleetInStore(newReg.trim(), newType);
     setNewReg("");
     setNewType("");
     setSuccessMessage("Aircraft added to fleet.");
   };
 
-  const addLogEntry = () => {
+  const handleAddLogEntry = () => {
     if (!aircraft || !fromStand || !toStand) {
       alert("Please complete all required fields.");
       return;
     }
-
     if (fromStand === toStand) {
       alert("From Stand and To Stand cannot match.");
       return;
@@ -434,33 +199,36 @@ export default function AircraftMovementLogbook() {
       time: new Date().toLocaleTimeString(),
     };
 
-    const userHistory = history[currentUser] || [];
-    setHistory({ ...history, [currentUser]: [entry, ...userHistory] });
-
+    addLogEntryInStore(entry);
     setAircraft("");
     setFromStand("");
     setToStand("");
     setNotes("");
     setMovementType("Tow");
+    setShowAircraftSuggestions(false);
     setSuccessMessage("Movement added successfully.");
   };
 
- const deleteEntry = (id, owner) => {
-  if (!id) return;
-  if (window.confirm("Delete this movement?")) {
-    const targetUser = owner || currentUser;
-    const userHistory = history[targetUser] || [];
-    setHistory({
-      ...history,
-      [targetUser]: userHistory.filter((entry) => entry.id !== id),
-    });
-  }
-};
+  const handleDeleteEntry = (id, owner) => {
+    if (!id) return;
+    if (window.confirm("Delete this movement?")) {
+      deleteEntryInStore(id, owner);
+    }
+  };
 
-const exportLogbook = () => {
-  const exportData = isAdmin ? allHistory : filteredHistory;
-  exportLogbookCSV(exportData);
-};
+  const handleDeleteUser = (username) => {
+    if (!username || username === "wayne") return;
+    if (!window.confirm(`Delete user ${username} and all associated records?`)) return;
+    deleteUserInStore(username);
+    if (selectedUser === username) {
+      setSelectedUser("ALL_USERS");
+    }
+  };
+
+  const exportLogbook = () => {
+    const exportData = isAdmin ? allHistory : filteredHistory;
+    exportLogbookCSV(exportData);
+  };
 
   if (!currentUser) {
     return (
@@ -477,14 +245,11 @@ const exportLogbook = () => {
     <div className="min-h-screen bg-sky-200">
       <div className="min-h-screen bg-sky-100 p-3 lg:p-6">
         <div className="max-w-7xl mx-auto space-y-4">
-
           <div className="bg-white rounded-2xl shadow-lg p-4 flex flex-wrap gap-2">
             <button
               onClick={() => setActivePage("home")}
               className={`px-4 py-2 rounded-xl font-semibold ${
-                activePage === "home"
-                  ? "bg-blue-600 text-white"
-                  : "bg-slate-100 text-slate-700"
+                activePage === "home" ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-700"
               }`}
             >
               Home
@@ -492,9 +257,7 @@ const exportLogbook = () => {
             <button
               onClick={() => setActivePage("movements")}
               className={`px-4 py-2 rounded-xl font-semibold ${
-                activePage === "movements"
-                  ? "bg-blue-600 text-white"
-                  : "bg-slate-100 text-slate-700"
+                activePage === "movements" ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-700"
               }`}
             >
               Aircraft Movements
@@ -502,9 +265,7 @@ const exportLogbook = () => {
             <button
               onClick={() => setActivePage("records")}
               className={`px-4 py-2 rounded-xl font-semibold ${
-                activePage === "records"
-                  ? "bg-blue-600 text-white"
-                  : "bg-slate-100 text-slate-700"
+                activePage === "records" ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-700"
               }`}
             >
               Movement Records
@@ -513,9 +274,7 @@ const exportLogbook = () => {
               <button
                 onClick={() => setActivePage("users")}
                 className={`px-4 py-2 rounded-xl font-semibold ${
-                  activePage === "users"
-                    ? "bg-blue-600 text-white"
-                    : "bg-slate-100 text-slate-700"
+                  activePage === "users" ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-700"
                 }`}
               >
                 Manage Users
@@ -529,29 +288,18 @@ const exportLogbook = () => {
             <>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-slate-800">
-                    Statistics Overview
-                  </h2>
-                  <div className="text-sm text-slate-500">
-                    Live movement tracking
-                  </div>
+                  <h2 className="text-2xl font-bold text-slate-800">Statistics Overview</h2>
+                  <div className="text-sm text-slate-500">Live movement tracking</div>
                 </div>
-
                 <StatsCards stats={stats} />
-
                 {isAdmin && userSummary.length > 0 && (
                   <div className="bg-white rounded-2xl shadow-lg p-4">
                     <div className="flex items-center justify-between mb-4">
                       <div>
-                        <h3 className="text-xl font-bold text-slate-800">
-                          User Movement Summary
-                        </h3>
-                        <div className="text-sm text-slate-500">
-                          Ranked by total movements logged.
-                        </div>
+                        <h3 className="text-xl font-bold text-slate-800">User Movement Summary</h3>
+                        <div className="text-sm text-slate-500">Ranked by total movements logged.</div>
                       </div>
                     </div>
-
                     <div className="overflow-x-auto">
                       <table className="min-w-full text-left text-sm text-slate-700">
                         <thead>
@@ -564,9 +312,7 @@ const exportLogbook = () => {
                           {userSummary.map((row) => (
                             <tr key={row.username} className="border-t">
                               <td className="px-4 py-3">{row.username}</td>
-                              <td className="px-4 py-3 font-semibold text-slate-800">
-                                {row.movements}
-                              </td>
+                              <td className="px-4 py-3 font-semibold text-slate-800">{row.movements}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -575,7 +321,6 @@ const exportLogbook = () => {
                   </div>
                 )}
               </div>
-
               <div className="grid lg:grid-cols-3 gap-4">
                 <FleetManager
                   newReg={newReg}
@@ -583,10 +328,9 @@ const exportLogbook = () => {
                   newType={newType}
                   setNewType={setNewType}
                   tuiAircraftTypes={tuiAircraftTypes}
-                  addAircraftToFleet={addAircraftToFleet}
-                  resetFleet={resetFleet}
+                  addAircraftToFleet={handleAddAircraftToFleet}
+                  resetFleet={handleResetFleet}
                 />
-
                 <div className="hidden lg:block"></div>
               </div>
             </>
@@ -595,7 +339,7 @@ const exportLogbook = () => {
               users={users}
               history={history}
               userSummary={userSummary}
-              onDeleteUser={deleteUser}
+              onDeleteUser={handleDeleteUser}
               onResetPassword={resetUserPassword}
             />
           ) : activePage === "movements" ? (
@@ -603,19 +347,14 @@ const exportLogbook = () => {
               <div className="bg-white rounded-2xl shadow-lg p-4">
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                   <div>
-                    <h2 className="text-2xl font-bold text-slate-800">
-                      Aircraft Movements
-                    </h2>
-                    <div className="text-sm text-slate-500">
-                      Log new movements here.
-                    </div>
+                    <h2 className="text-2xl font-bold text-slate-800">Aircraft Movements</h2>
+                    <div className="text-sm text-slate-500">Log new movements here.</div>
                   </div>
                   <div className="text-sm text-slate-500">
-                    {isAdmin ? allHistory.length : (history[currentUser] || []).length} records total
+                    {isAdmin ? allHistory.length : currentUserHistory.length} records total
                   </div>
                 </div>
               </div>
-
               <MovementForm
                 movementDate={movementDate}
                 setMovementDate={setMovementDate}
@@ -634,7 +373,7 @@ const exportLogbook = () => {
                 filteredAircraftOptions={filteredAircraftOptions}
                 showAircraftSuggestions={showAircraftSuggestions}
                 setShowAircraftSuggestions={setShowAircraftSuggestions}
-                addLogEntry={addLogEntry}
+                addLogEntry={handleAddLogEntry}
                 successMessage={successMessage}
                 clearSuccessMessage={() => setSuccessMessage("")}
               />
@@ -644,22 +383,17 @@ const exportLogbook = () => {
               <div className="bg-white rounded-2xl shadow-lg p-4">
                 <div className="flex items-center justify-between gap-4 flex-wrap">
                   <div>
-                    <h2 className="text-2xl font-bold text-slate-800">
-                      Movement Records
-                    </h2>
-                    <div className="text-sm text-slate-500">
-                      View all saved records in one place.
-                    </div>
+                    <h2 className="text-2xl font-bold text-slate-800">Movement Records</h2>
+                    <div className="text-sm text-slate-500">View all saved records in one place.</div>
                   </div>
                   <div className="text-sm text-slate-500">
-                    {isAdmin ? allHistory.length : (history[currentUser] || []).length} records total
+                    {isAdmin ? allHistory.length : currentUserHistory.length} records total
                   </div>
                 </div>
               </div>
-
               <RecordsPanel
                 paginatedHistory={paginatedHistory}
-                deleteEntry={deleteEntry}
+                deleteEntry={handleDeleteEntry}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 activeTab={activeTab}
@@ -678,7 +412,6 @@ const exportLogbook = () => {
               />
             </div>
           )}
-
         </div>
       </div>
     </div>
