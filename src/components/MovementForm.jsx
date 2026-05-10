@@ -18,6 +18,8 @@ export default function MovementForm({
   setShowAircraftSuggestions,
   addLogEntry,
 }) {
+  const showWarning = aircraft.toLowerCase().includes("boeing 787-800");
+
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 space-y-4">
 
@@ -69,6 +71,12 @@ export default function MovementForm({
         )}
 
       </div>
+
+      {showWarning && (
+        <div className="rounded-2xl border border-orange-300 bg-orange-50 px-4 py-3 text-sm text-orange-800">
+          Warning: Boeing 787-800 selected — See engineer for pins.
+        </div>
+      )}
 
       <select
         value={movementType}
