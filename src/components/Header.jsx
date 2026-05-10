@@ -3,7 +3,7 @@ export default function Header({ fleetCount }) {
     <div className="bg-white rounded-2xl shadow-lg p-4 flex justify-between items-center">
       <div>
         <h1 className="text-2xl font-bold text-slate-800">
-          MAN Aircraft Movement Logbook
+          Wayne's Tui Brake riding
         </h1>
 
         <div className="text-sm text-slate-500 mt-1">
