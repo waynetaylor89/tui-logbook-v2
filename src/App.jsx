@@ -143,7 +143,18 @@ export default function AircraftMovementLogbook() {
 
   const [fleet, setFleet] = useState(() => {
     const savedFleet = localStorage.getItem("aircraft-logbook-fleet");
-    return savedFleet ? JSON.parse(savedFleet) : initialFleet;
+    if (savedFleet) {
+      try {
+        const parsedFleet = JSON.parse(savedFleet);
+        const mergedFleet = Array.from(
+          new Set([...(parsedFleet || []), ...initialFleet])
+        ).sort();
+        return mergedFleet;
+      } catch {
+        return initialFleet;
+      }
+    }
+    return initialFleet;
   });
 
   const [history, setHistory] = useState(() => {

@@ -17,8 +17,11 @@ export default function MovementForm({
   showAircraftSuggestions,
   setShowAircraftSuggestions,
   addLogEntry,
+  successMessage,
+  clearSuccessMessage,
 }) {
-  const showWarning = aircraft.toLowerCase().includes("boeing 787-800");
+  const normalizedAircraft = aircraft.toLowerCase();
+  const showWarning = /787-8|787-800|boeing 787-800/i.test(normalizedAircraft);
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-4 space-y-4">
@@ -75,6 +78,19 @@ export default function MovementForm({
       {showWarning && (
         <div className="rounded-2xl border border-orange-300 bg-orange-50 px-4 py-3 text-sm text-orange-800">
           Warning: Boeing 787-800 selected — See engineer for pins.
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 flex items-center justify-between gap-3">
+          <span>{successMessage}</span>
+          <button
+            type="button"
+            onClick={clearSuccessMessage}
+            className="text-emerald-700 font-semibold hover:text-emerald-900"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 
