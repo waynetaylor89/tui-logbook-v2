@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 const initialFleet = [
   "G-FDZD - Boeing 737-800",
@@ -82,12 +82,14 @@ const useLogbookStore = create(
       history: {},
       users: {},
       currentUser: null,
+      hasHydrated: false,
 
       // Actions
       setFleet: (fleet) => set({ fleet }),
       setHistory: (history) => set({ history }),
       setUsers: (users) => set({ users }),
       setCurrentUser: (user) => set({ currentUser: user }),
+      setHasHydrated: (value) => set({ hasHydrated: value }),
 
       // Specific actions
       addAircraftToFleet: (newReg, newType) => {
@@ -183,12 +185,18 @@ const useLogbookStore = create(
     }),
     {
       name: "logbook-storage",
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         fleet: state.fleet,
         history: state.history,
         users: state.users,
         currentUser: state.currentUser,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.setHasHydrated(true);
+        }
+      },
     }
   )
 );

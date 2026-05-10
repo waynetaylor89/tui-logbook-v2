@@ -29,6 +29,7 @@ export default function AircraftMovementLogbook() {
     history,
     users,
     currentUser,
+    hasHydrated,
     addAircraftToFleet: addAircraftToFleetInStore,
     resetFleet: resetFleetInStore,
     addLogEntry: addLogEntryInStore,
@@ -229,6 +230,16 @@ export default function AircraftMovementLogbook() {
     const exportData = isAdmin ? allHistory : filteredHistory;
     exportLogbookCSV(exportData);
   };
+
+  if (!hasHydrated) {
+    return (
+      <div className="min-h-screen bg-sky-200 flex items-center justify-center">
+        <div className="bg-white rounded-2xl shadow-lg px-6 py-4 text-slate-700 font-medium">
+          Loading saved logbook data...
+        </div>
+      </div>
+    );
+  }
 
   if (!currentUser) {
     return (
