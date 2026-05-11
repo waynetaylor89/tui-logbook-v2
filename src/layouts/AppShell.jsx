@@ -4,24 +4,26 @@ import Header from "../components/Header.jsx";
 import Breadcrumbs from "../components/Breadcrumbs.jsx";
 
 const navClass = ({ isActive }) =>
-  `px-4 py-2 rounded-xl font-semibold ${
-    isActive ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-700"
+  `px-4 py-2 rounded-xl font-semibold transition-all duration-200 ${
+    isActive 
+      ? "bg-sky-700 text-white shadow-md" 
+      : "bg-slate-50 text-slate-700 hover:bg-slate-100"
   }`;
 
 export default function AppShell({ fleetCount, currentUser, isAdmin, onLogout }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-sky-200">
-      <div className="min-h-screen bg-sky-100 p-3 lg:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-sky-50">
+      <div className="min-h-screen p-3 lg:p-6">
         <div className="max-w-7xl mx-auto space-y-4">
           {/* Mobile Navigation */}
           <div className="lg:hidden bg-white rounded-2xl shadow-lg p-4">
             <div className="flex justify-between items-center">
-              <h1 className="text-lg font-bold text-slate-800">TUI Logbook</h1>
+              <h1 className="text-lg font-bold text-sky-800">TUI Logbook</h1>
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200"
+                className="p-2 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-700"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   {isMobileMenuOpen ? (
@@ -54,7 +56,7 @@ export default function AppShell({ fleetCount, currentUser, isAdmin, onLogout })
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:block bg-white rounded-2xl shadow-lg p-4 flex flex-wrap gap-2">
+          <div className="hidden lg:block bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-4 flex flex-wrap gap-2 border border-sky-100">
             <NavLink to="/" end className={navClass}>
               Home
             </NavLink>

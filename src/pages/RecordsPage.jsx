@@ -1,4 +1,5 @@
 import RecordsPanel from "../components/RecordsPanel.jsx";
+import { NoRecordsEmpty, NoResultsEmpty } from "../components/EmptyState.jsx";
 
 export default function RecordsPage({
   isAdmin,
@@ -36,7 +37,21 @@ export default function RecordsPage({
           </div>
         </div>
       </div>
-      <RecordsPanel
+      
+      {/* Show empty state when no records */}
+      {paginatedHistory.length === 0 ? (
+        searchTerm ? (
+          <NoResultsEmpty 
+            searchTerm={searchTerm}
+            onClearSearch={() => setSearchTerm("")}
+          />
+        ) : (
+          <NoRecordsEmpty 
+            onAddMovement={() => window.location.href = "/movements"}
+          />
+        )
+      ) : (
+        <RecordsPanel
         paginatedHistory={paginatedHistory}
         deleteEntry={handleDeleteEntry}
         editEntry={handleEditEntry}
@@ -57,6 +72,7 @@ export default function RecordsPage({
         userOptions={userOptions}
         stats={stats}
       />
+      )}
     </div>
   );
 }
