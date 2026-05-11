@@ -1,36 +1,30 @@
-// Test component to diagnose white screen issue
+import { useState } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
+
+// Test Login component
+function TestLogin() {
+  return (
+    <div style={{ padding: '20px', backgroundColor: 'lightgreen', minHeight: '100vh' }}>
+      <h1>Test Login Page</h1>
+      <p>Login component is working!</p>
+    </div>
+  );
+}
 
 export default function AircraftMovementLogbook() {
+  const [currentUser, setCurrentUser] = useState(null);
+  
   console.log("App component is rendering!");
   
+  if (!currentUser) {
+    return <TestLogin />;
+  }
+  
   return (
-    <div style={{ 
-      padding: '20px', 
-      backgroundColor: 'lightblue', 
-      minHeight: '100vh',
-      fontFamily: 'Arial, sans-serif'
-    }}>
-      <h1 style={{ color: 'darkblue', fontSize: '2rem' }}>
-        TUI Logbook - Test Page
-      </h1>
-      <p style={{ fontSize: '1.2rem', marginTop: '20px' }}>
-        If you can see this page, React is working correctly!
-      </p>
-      <p style={{ marginTop: '10px' }}>
-        The white screen issue is likely caused by component imports or state management.
-      </p>
-      <div style={{ 
-        marginTop: '20px', 
-        padding: '10px', 
-        backgroundColor: 'white', 
-        border: '2px solid darkblue',
-        borderRadius: '8px'
-      }}>
-        <h3>Debugging Info:</h3>
-        <p>✅ React is rendering</p>
-        <p>✅ CSS is working</p>
-        <p>✅ JavaScript is executing</p>
-      </div>
+    <div style={{ padding: '20px', backgroundColor: 'lightblue', minHeight: '100vh' }}>
+      <h1>TUI Logbook - Main App</h1>
+      <p>Logged in as: {currentUser}</p>
+      <button onClick={() => setCurrentUser(null)}>Logout</button>
     </div>
   );
 }
