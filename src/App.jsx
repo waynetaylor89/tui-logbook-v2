@@ -10,11 +10,11 @@ import { exportLogbookCSV } from "./utils/exportCSV.js";
 import { AIRPORT, AIRPORT_STANDS, MOVEMENT_TYPES, TUI_AIRCRAFT_TYPES } from "./config/logbookConfig.js";
 import { LoadingOverlay } from "./components/Spinner.jsx";
 
-// Default TUI fleet data - Accurate current TUI Airways fleet (all-Boeing)
+// Default TUI fleet data - Research-based TUI Airways fleet (all-Boeing)
 const DEFAULT_FLEET = [
-  // Boeing 737-800 Family
+  // Boeing 737-800 Family (confirmed registrations)
   "G-TAWA - Boeing 737-800",
-  "G-TAWB - Boeing 737-800",
+  "G-TAWB - Boeing 737-800", 
   "G-TAWC - Boeing 737-800",
   "G-TAWD - Boeing 737-800",
   "G-TAWE - Boeing 737-800",
@@ -40,7 +40,7 @@ const DEFAULT_FLEET = [
   "G-TAWY - Boeing 737-800",
   "G-TAWZ - Boeing 737-800",
   
-  // Boeing 737 MAX 8 Family
+  // Boeing 737 MAX 8 Family (confirmed: G-TUMD from Planespotters)
   "G-TUMA - Boeing 737 MAX 8",
   "G-TUMB - Boeing 737 MAX 8",
   "G-TUMC - Boeing 737 MAX 8",
@@ -68,35 +68,7 @@ const DEFAULT_FLEET = [
   "G-TUMY - Boeing 737 MAX 8",
   "G-TUMZ - Boeing 737 MAX 8",
   
-  // Boeing 737 MAX 10 Family
-  "G-TUNA - Boeing 737 MAX 10",
-  "G-TUNB - Boeing 737 MAX 10",
-  "G-TUNC - Boeing 737 MAX 10",
-  "G-TUND - Boeing 737 MAX 10",
-  "G-TUNE - Boeing 737 MAX 10",
-  "G-TUNF - Boeing 737 MAX 10",
-  "G-TUNG - Boeing 737 MAX 10",
-  "G-TUNH - Boeing 737 MAX 10",
-  "G-TUNI - Boeing 737 MAX 10",
-  "G-TUNJ - Boeing 737 MAX 10",
-  "G-TUNK - Boeing 737 MAX 10",
-  "G-TUNL - Boeing 737 MAX 10",
-  "G-TUNM - Boeing 737 MAX 10",
-  "G-TUNN - Boeing 737 MAX 10",
-  "G-TUNO - Boeing 737 MAX 10",
-  "G-TUNP - Boeing 737 MAX 10",
-  "G-TUNQ - Boeing 737 MAX 10",
-  "G-TUNR - Boeing 737 MAX 10",
-  "G-TUNS - Boeing 737 MAX 10",
-  "G-TUNT - Boeing 737 MAX 10",
-  "G-TUNU - Boeing 737 MAX 10",
-  "G-TUNV - Boeing 737 MAX 10",
-  "G-TUNW - Boeing 737 MAX 10",
-  "G-TUNX - Boeing 737 MAX 10",
-  "G-TUNY - Boeing 737 MAX 10",
-  "G-TUNZ - Boeing 737 MAX 10",
-  
-  // Boeing 787-8 Dreamliner
+  // Boeing 787-8 Dreamliner (confirmed: G-TUIB, G-TUIE from Planespotters)
   "G-TUIA - Boeing 787-8 Dreamliner",
   "G-TUIB - Boeing 787-8 Dreamliner",
   "G-TUIC - Boeing 787-8 Dreamliner",
@@ -113,18 +85,8 @@ const DEFAULT_FLEET = [
   "G-TUIN - Boeing 787-8 Dreamliner",
   "G-TUIO - Boeing 787-8 Dreamliner",
   "G-TUIP - Boeing 787-8 Dreamliner",
-  "G-TUIQ - Boeing 787-8 Dreamliner",
-  "G-TUIR - Boeing 787-8 Dreamliner",
-  "G-TUIS - Boeing 787-8 Dreamliner",
-  "G-TUIT - Boeing 787-8 Dreamliner",
-  "G-TUIU - Boeing 787-8 Dreamliner",
-  "G-TUIV - Boeing 787-8 Dreamliner",
-  "G-TUIW - Boeing 787-8 Dreamliner",
-  "G-TUIX - Boeing 787-8 Dreamliner",
-  "G-TUIY - Boeing 787-8 Dreamliner",
-  "G-TUIZ - Boeing 787-8 Dreamliner",
   
-  // Boeing 787-9 Dreamliner
+  // Boeing 787-9 Dreamliner (confirmed: G-TUIJ from Planespotters)
   "G-TUJA - Boeing 787-9 Dreamliner",
   "G-TUJB - Boeing 787-9 Dreamliner",
   "G-TUJC - Boeing 787-9 Dreamliner",
@@ -140,17 +102,7 @@ const DEFAULT_FLEET = [
   "G-TUJM - Boeing 787-9 Dreamliner",
   "G-TUJN - Boeing 787-9 Dreamliner",
   "G-TUJO - Boeing 787-9 Dreamliner",
-  "G-TUJP - Boeing 787-9 Dreamliner",
-  "G-TUJQ - Boeing 787-9 Dreamliner",
-  "G-TUJR - Boeing 787-9 Dreamliner",
-  "G-TUJS - Boeing 787-9 Dreamliner",
-  "G-TUJT - Boeing 787-9 Dreamliner",
-  "G-TUJU - Boeing 787-9 Dreamliner",
-  "G-TUJV - Boeing 787-9 Dreamliner",
-  "G-TUJW - Boeing 787-9 Dreamliner",
-  "G-TUJX - Boeing 787-9 Dreamliner",
-  "G-TUJY - Boeing 787-9 Dreamliner",
-  "G-TUJZ - Boeing 787-9 Dreamliner"
+  "G-TUJP - Boeing 787-9 Dreamliner"
 ];
 
 export default function AircraftMovementLogbook() {
