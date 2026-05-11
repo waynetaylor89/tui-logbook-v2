@@ -216,31 +216,11 @@ export default function AircraftMovementLogbook() {
     exportLogbookCSV(exportData);
   };
 
-  // Fix hydration issue with timeout fallback
-  const [hydrationTimeout, setHydrationTimeout] = useState(false);
-  
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!hasHydrated) {
-        console.log('Hydration timeout - forcing render');
-        setHydrationTimeout(true);
-      }
-    }, 3000);
-    
-    return () => clearTimeout(timer);
-  }, [hasHydrated]);
-
-  if (!hasHydrated && !hydrationTimeout) {
-    return (
-      <div className="min-h-screen bg-sky-200 flex items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-lg px-6 py-4 text-slate-700 font-medium">
-          Loading saved logbook data...
-        </div>
-      </div>
-    );
-  }
+  // Bypass hydration check to prevent white screen issue
+  // The hydration was causing infinite loading in production
 
   if (!currentUser) {
+    console.log("Showing login screen - currentUser:", currentUser);
     return (
       <Login
         onLogin={login}
@@ -251,103 +231,19 @@ export default function AircraftMovementLogbook() {
     );
   }
 
+  console.log("Rendering main app - currentUser:", currentUser, "hasHydrated:", hasHydrated);
+
+  // Simple test to see if the issue is with complex components
   return (
-    <Routes>
-      <Route
-        element={<AppShell fleetCount={fleet.length} currentUser={currentUser} isAdmin={isAdmin} onLogout={logout} />}
-      >
-        <Route
-          path="/"
-          element={
-            <HomePage
-              isAdmin={isAdmin}
-              userSummary={userSummary}
-              stats={stats}
-              newReg={newReg}
-              setNewReg={setNewReg}
-              newType={newType}
-              setNewType={setNewType}
-              tuiAircraftTypes={TUI_AIRCRAFT_TYPES}
-              handleAddAircraftToFleet={handleAddAircraftToFleet}
-              handleResetFleet={handleResetFleet}
-            />
-          }
-        />
-        <Route
-          path="/movements"
-          element={
-            <MovementsPage
-              isAdmin={isAdmin}
-              currentUser={currentUser}
-              allHistoryLength={allHistory.length}
-              currentUserHistoryLength={currentUserHistory.length}
-              movementDate={movementDate}
-              setMovementDate={setMovementDate}
-              aircraft={aircraft}
-              setAircraft={setAircraft}
-              movementType={movementType}
-              setMovementType={setMovementType}
-              fromStand={fromStand}
-              setFromStand={setFromStand}
-              toStand={toStand}
-              setToStand={setToStand}
-              notes={notes}
-              setNotes={setNotes}
-              movementTypes={MOVEMENT_TYPES}
-              airportStands={AIRPORT_STANDS}
-              filteredAircraftOptions={filteredAircraftOptions}
-              showAircraftSuggestions={showAircraftSuggestions}
-              setShowAircraftSuggestions={setShowAircraftSuggestions}
-              handleAddLogEntry={handleAddLogEntry}
-              successMessage={successMessage}
-              clearSuccessMessage={() => setSuccessMessage("")}
-            />
-          }
-        />
-        <Route
-          path="/records"
-          element={
-            <RecordsPage
-              isAdmin={isAdmin}
-              allHistoryLength={allHistory.length}
-              currentUserHistoryLength={currentUserHistory.length}
-              paginatedHistory={paginatedHistory}
-              handleDeleteEntry={handleDeleteEntry}
-              handleEditEntry={handleEditEntry}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              tuiAircraftTypes={TUI_AIRCRAFT_TYPES}
-              totalPages={totalPages}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              typeFilteredHistory={typeFilteredHistory}
-              exportLogbook={exportLogbook}
-              selectedUser={selectedUser}
-              setSelectedUser={setSelectedUser}
-              userOptions={userOptions}
-              stats={stats}
-            />
-          }
-        />
-        <Route
-          path="/users"
-          element={
-            isAdmin ? (
-              <UsersPage
-                users={users}
-                history={history}
-                userSummary={userSummary}
-                handleDeleteUser={handleDeleteUser}
-                resetUserPassword={resetUserPassword}
-              />
-            ) : (
-              <Navigate to="/" replace />
-            )
-          }
-        />
-      </Route>
-    </Routes>
+    <div style={{ padding: '20px', backgroundColor: 'lightgreen', minHeight: '100vh' }}>
+      <h1>TUI Logbook - Main App</h1>
+      <p>Logged in as: {currentUser}</p>
+      <p>Admin: {isAdmin ? 'Yes' : 'No'}</p>
+      <p>Fleet count: {fleet?.length || 0}</p>
+      <p>Has hydrated: {hasHydrated ? 'Yes' : 'No'}</p>
+      <button onClick={logout} style={{ marginTop: '20px', padding: '10px 20px' }}>
+        Logout
+      </button>
+    </div>
   );
 }
