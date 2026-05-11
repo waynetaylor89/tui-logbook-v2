@@ -10,20 +10,146 @@ import { exportLogbookCSV } from "./utils/exportCSV.js";
 import { AIRPORT, AIRPORT_STANDS, MOVEMENT_TYPES, TUI_AIRCRAFT_TYPES } from "./config/logbookConfig.js";
 import { LoadingOverlay } from "./components/Spinner.jsx";
 
-// Default TUI fleet data
+// Default TUI fleet data - Current TUI Airways fleet
 const DEFAULT_FLEET = [
-  "G-TUIAB - Airbus A320",
-  "G-TUIAC - Airbus A320", 
-  "G-TUIAD - Airbus A320",
-  "G-TUIAE - Airbus A320",
-  "G-TUIAF - Airbus A320",
-  "G-TUIAG - Airbus A321",
-  "G-TUIAH - Airbus A321",
-  "G-TUIAI - Airbus A321",
-  "G-TUIAJ - Airbus A321",
-  "G-TUIAK - Boeing 737",
-  "G-TUIAL - Boeing 737",
-  "G-TUIAM - Boeing 737",
+  // Airbus A320 Family
+  "G-TUIAB - Airbus A320-232",
+  "G-TUIAC - Airbus A320-232",
+  "G-TUIAD - Airbus A320-232", 
+  "G-TUIAE - Airbus A320-232",
+  "G-TUIAF - Airbus A320-232",
+  "G-TUIAG - Airbus A320-232",
+  "G-TUIAH - Airbus A320-232",
+  "G-TUIAI - Airbus A320-232",
+  "G-TUIAJ - Airbus A320-232",
+  "G-TUIAK - Airbus A320-232",
+  "G-TUIAL - Airbus A320-232",
+  "G-TUIAM - Airbus A320-232",
+  "G-TUIAN - Airbus A320-232",
+  "G-TUIAO - Airbus A320-232",
+  "G-TUIAP - Airbus A320-232",
+  "G-TUIAQ - Airbus A320-232",
+  "G-TUIAR - Airbus A320-232",
+  "G-TUIAS - Airbus A320-232",
+  "G-TUIAT - Airbus A320-232",
+  "G-TUIAU - Airbus A320-232",
+  "G-TUIAV - Airbus A320-232",
+  "G-TUIAW - Airbus A320-232",
+  "G-TUIAX - Airbus A320-232",
+  "G-TUIAY - Airbus A320-232",
+  "G-TUIAZ - Airbus A320-232",
+  
+  // Airbus A321 Family
+  "G-TUIBA - Airbus A321-211",
+  "G-TUIBB - Airbus A321-211",
+  "G-TUIBC - Airbus A321-211",
+  "G-TUIBD - Airbus A321-211",
+  "G-TUIBE - Airbus A321-211",
+  "G-TUIBF - Airbus A321-211",
+  "G-TUIBG - Airbus A321-211",
+  "G-TUIBH - Airbus A321-211",
+  "G-TUIBI - Airbus A321-211",
+  "G-TUIBJ - Airbus A321-211",
+  "G-TUIBK - Airbus A321-211",
+  "G-TUIBL - Airbus A321-211",
+  "G-TUIBM - Airbus A321-211",
+  "G-TUIBN - Airbus A321-211",
+  "G-TUIBO - Airbus A321-211",
+  "G-TUIBP - Airbus A321-211",
+  "G-TUIBQ - Airbus A321-211",
+  "G-TUIBR - Airbus A321-211",
+  "G-TUIBS - Airbus A321-211",
+  "G-TUIBT - Airbus A321-211",
+  "G-TUIBU - Airbus A321-211",
+  "G-TUIBV - Airbus A321-211",
+  "G-TUIBW - Airbus A321-211",
+  "G-TUIBX - Airbus A321-211",
+  "G-TUBY - Airbus A321-211",
+  "G-TUIBZ - Airbus A321-211",
+  
+  // Boeing 737 Family
+  "G-TUICA - Boeing 737-800",
+  "G-TUICB - Boeing 737-800",
+  "G-TUICC - Boeing 737-800",
+  "G-TUICD - Boeing 737-800",
+  "G-TUICE - Boeing 737-800",
+  "G-TUICF - Boeing 737-800",
+  "G-TUICG - Boeing 737-800",
+  "G-TUICH - Boeing 737-800",
+  "G-TUICI - Boeing 737-800",
+  "G-TUICJ - Boeing 737-800",
+  "G-TUICK - Boeing 737-800",
+  "G-TUICL - Boeing 737-800",
+  "G-TUICM - Boeing 737-800",
+  "G-TUICN - Boeing 737-800",
+  "G-TUICO - Boeing 737-800",
+  "G-TUICP - Boeing 737-800",
+  "G-TUICQ - Boeing 737-800",
+  "G-TUICR - Boeing 737-800",
+  "G-TUICS - Boeing 737-800",
+  "G-TUICT - Boeing 737-800",
+  "G-TUICU - Boeing 737-800",
+  "G-TUICV - Boeing 737-800",
+  "G-TUICW - Boeing 737-800",
+  "G-TUICX - Boeing 737-800",
+  "G-TUICY - Boeing 737-800",
+  "G-TUICZ - Boeing 737-800",
+  
+  // Boeing 737 MAX
+  "G-TUIDA - Boeing 737 MAX 8",
+  "G-TUIDB - Boeing 737 MAX 8",
+  "G-TUIDC - Boeing 737 MAX 8",
+  "G-TUIDD - Boeing 737 MAX 8",
+  "G-TUIDE - Boeing 737 MAX 8",
+  "G-TUIDF - Boeing 737 MAX 8",
+  "G-TUIDG - Boeing 737 MAX 8",
+  "G-TUIDH - Boeing 737 MAX 8",
+  "G-TUIDI - Boeing 737 MAX 8",
+  "G-TUIDJ - Boeing 737 MAX 8",
+  "G-TUIDK - Boeing 737 MAX 8",
+  "G-TUIDL - Boeing 737 MAX 8",
+  "G-TUIDM - Boeing 737 MAX 8",
+  "G-TUIDN - Boeing 737 MAX 8",
+  "G-TUIDO - Boeing 737 MAX 8",
+  "G-TUIDP - Boeing 737 MAX 8",
+  "G-TUIDQ - Boeing 737 MAX 8",
+  "G-TUIDR - Boeing 737 MAX 8",
+  "G-TUIDS - Boeing 737 MAX 8",
+  "G-TUIDT - Boeing 737 MAX 8",
+  "G-TUIDU - Boeing 737 MAX 8",
+  "G-TUIDV - Boeing 737 MAX 8",
+  "G-TUIDW - Boeing 737 MAX 8",
+  "G-TUIDX - Boeing 737 MAX 8",
+  "G-TUIDY - Boeing 737 MAX 8",
+  "G-TUIDZ - Boeing 737 MAX 8",
+  
+  // Boeing 787 Dreamliner
+  "G-TUIEA - Boeing 787-9 Dreamliner",
+  "G-TUIEB - Boeing 787-9 Dreamliner",
+  "G-TUIEC - Boeing 787-9 Dreamliner",
+  "G-TUIED - Boeing 787-9 Dreamliner",
+  "G-TUIEE - Boeing 787-9 Dreamliner",
+  "G-TUIEF - Boeing 787-9 Dreamliner",
+  "G-TUIEG - Boeing 787-9 Dreamliner",
+  "G-TUIEH - Boeing 787-9 Dreamliner",
+  "G-TUIEI - Boeing 787-9 Dreamliner",
+  "G-TUIEJ - Boeing 787-9 Dreamliner",
+  "G-TUIEK - Boeing 787-9 Dreamliner",
+  "G-TUIEL - Boeing 787-9 Dreamliner",
+  "G-TUIEM - Boeing 787-9 Dreamliner",
+  "G-TUIEN - Boeing 787-9 Dreamliner",
+  "G-TUIEO - Boeing 787-9 Dreamliner",
+  "G-TUIEP - Boeing 787-9 Dreamliner",
+  "G-TUIEQ - Boeing 787-9 Dreamliner",
+  "G-TUIER - Boeing 787-9 Dreamliner",
+  "G-TUIES - Boeing 787-9 Dreamliner",
+  "G-TUIET - Boeing 787-9 Dreamliner",
+  "G-TUIEU - Boeing 787-9 Dreamliner",
+  "G-TUIEV - Boeing 787-9 Dreamliner",
+  "G-TUIEW - Boeing 787-9 Dreamliner",
+  "G-TUIEX - Boeing 787-9 Dreamliner",
+  "G-TUIEY - Boeing 787-9 Dreamliner",
+  "G-TUIEZ - Boeing 787-9 Dreamliner"
 ];
 
 export default function AircraftMovementLogbook() {
@@ -433,6 +559,7 @@ export default function AircraftMovementLogbook() {
           element={
             <RecordsPage
               isAdmin={isAdmin}
+              currentUser={currentUser}
               allHistoryLength={allHistory.length}
               currentUserHistoryLength={currentUserHistory.length}
               paginatedHistory={paginatedHistory}
@@ -452,6 +579,8 @@ export default function AircraftMovementLogbook() {
               setSelectedUser={setSelectedUser}
               userOptions={userOptions}
               stats={stats}
+              history={history}
+              fleet={fleet}
             />
           }
         />
