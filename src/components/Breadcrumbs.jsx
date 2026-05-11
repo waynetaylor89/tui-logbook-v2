@@ -1,0 +1,49 @@
+import { useLocation, Link } from "react-router-dom";
+
+const Breadcrumbs = () => {
+  const location = useLocation();
+  
+  const getBreadcrumbs = () => {
+    const pathnames = location.pathname.split('/').filter(x => x);
+    
+    const breadcrumbMap = {
+      '': 'Home',
+      'movements': 'Aircraft Movements',
+      'records': 'Movement Records',
+      'users': 'Manage Users'
+    };
+
+    return pathnames.map((name, index) => {
+      const routeTo = `/${pathnames.slice(0, index + 1).join('/')}`;
+      const isLast = index === pathnames.length - 1;
+      const displayName = breadcrumbMap[name] || name;
+
+      return (
+        <span key={routeTo} className="flex items-center">
+          {index > 0 && <span className="mx-2 text-slate-400">/</span>}
+          {isLast ? (
+            <span className="text-slate-900 font-medium">{displayName}</span>
+          ) : (
+            <Link 
+              to={routeTo} 
+              className="text-blue-600 hover:text-blue-800 transition-colors"
+            >
+              {displayName}
+            </Link>
+          )}
+        </span>
+      );
+    });
+  };
+
+  return (
+    <nav className="flex items-center space-x-1 text-sm py-2 px-4 bg-slate-50 rounded-lg">
+      <Link to="/" className="text-blue-600 hover:text-blue-800 transition-colors">
+        🏠
+      </Link>
+      {getBreadcrumbs()}
+    </nav>
+  );
+};
+
+export default Breadcrumbs;

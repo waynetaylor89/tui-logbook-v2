@@ -8,6 +8,7 @@ import RecordsPage from "./pages/RecordsPage.jsx";
 import UsersPage from "./pages/UsersPage.jsx";
 import { exportLogbookCSV } from "./utils/exportCSV.js";
 import { AIRPORT, AIRPORT_STANDS, MOVEMENT_TYPES, TUI_AIRCRAFT_TYPES } from "./config/logbookConfig.js";
+import { LoadingOverlay } from "./components/Spinner.jsx";
 
 // Default TUI fleet data
 const DEFAULT_FLEET = [
@@ -92,11 +93,17 @@ export default function AircraftMovementLogbook() {
   // Login function using local state
   const handleLogin = async (username, password) => {
     console.log("Login attempt:", username, password);
+    setIsLoading(true);
+    setLoadingMessage("Authenticating...");
+    
+    // Simulate async operation
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     // Simple admin login
     if (username === "wayne" && password === "admin") {
       setCurrentUser(username);
       saveCurrentUser(username);
+      setIsLoading(false);
       return true;
     }
     
@@ -105,9 +112,11 @@ export default function AircraftMovementLogbook() {
     if (user && user.password === password) {
       setCurrentUser(username);
       saveCurrentUser(username);
+      setIsLoading(false);
       return true;
     }
     
+    setIsLoading(false);
     return false;
   };
   
@@ -189,6 +198,8 @@ export default function AircraftMovementLogbook() {
   const [newReg, setNewReg] = useState("");
   const [newType, setNewType] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
 
   const recordsPerPage = 10;
 
@@ -362,7 +373,9 @@ export default function AircraftMovementLogbook() {
   console.log("Rendering main app - currentUser:", currentUser);
 
   return (
-    <Routes>
+    <>
+      {isLoading && <LoadingOverlay message={loadingMessage} />}
+      <Routes>
       <Route
         element={<AppShell fleetCount={fleet.length} currentUser={currentUser} isAdmin={isAdmin} onLogout={handleLogout} />}
       >
@@ -459,5 +472,6 @@ export default function AircraftMovementLogbook() {
         />
       </Route>
     </Routes>
+    </>
   );
 }
