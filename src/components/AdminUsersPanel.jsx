@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function AdminUsersPanel({ users, history, userSummary, onDeleteUser, onResetPassword }) {
+export default function AdminUsersPanel({ users, userSummary, onDeleteUser, onResetPassword }) {
   const [passwordInputs, setPasswordInputs] = useState({});
 
   const handlePasswordChange = (username, value) => {

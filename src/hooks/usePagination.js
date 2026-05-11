@@ -19,9 +19,4 @@ export default function usePagination(
     totalPages,
     paginatedData,
   };
-}const { totalPages, paginatedData } =
-  usePagination(
-    typeFilteredHistory,
-    currentPage,
-    recordsPerPage
-  );
+}

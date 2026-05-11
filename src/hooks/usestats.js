@@ -30,4 +30,4 @@ export default function useStats(history) {
         .slice(0, 3),
     };
   }, [history]);
-}const stats = useStats(history);
+}

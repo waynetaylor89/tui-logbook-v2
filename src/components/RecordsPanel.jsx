@@ -12,7 +12,6 @@ export default function RecordsPanel({
   totalPages,
   currentPage,
   setCurrentPage,
-  typeFilteredHistory,
   exportLogbook,
   isAdmin,
   currentUser,

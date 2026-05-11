@@ -1,3 +1,5 @@
+
+import { supabase } from "./lib/supabase";
 import { useEffect, useMemo, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Login from "./components/Login.jsx";
@@ -20,7 +22,9 @@ import {
 } from "./store/selectors.js";
 
 export default function AircraftMovementLogbook() {
-  const {
+  console.log(supabase);
+
+    const {
     fleet,
     history,
     users,
@@ -78,7 +82,7 @@ export default function AircraftMovementLogbook() {
 
   const currentUserHistory = useMemo(() => {
     return getCurrentUserHistory(history, currentUser);
-  }, [currentUser, history]);
+  }, [history, currentUser]);
 
   const userOptions = useMemo(() => {
     return getUserOptions(users, history);
