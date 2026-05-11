@@ -386,6 +386,7 @@ export default function AircraftMovementLogbook() {
               isAdmin={isAdmin}
               userSummary={userSummary}
               stats={stats}
+              history={history}
               newReg={newReg}
               setNewReg={setNewReg}
               newType={newType}

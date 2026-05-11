@@ -1,10 +1,12 @@
 import FleetManager from "../components/FleetManager.jsx";
 import StatsCards from "../components/StatsCards.jsx";
+import { MovementStatsChart, DailyTrendChart } from "../components/Charts.jsx";
 
 export default function HomePage({
   isAdmin,
   userSummary,
   stats,
+  history,
   newReg,
   setNewReg,
   newType,
@@ -17,15 +19,39 @@ export default function HomePage({
     <>
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-slate-800">Statistics Overview</h2>
+          <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+            📊 Statistics Overview
+          </h2>
           <div className="text-sm text-slate-500">Live movement tracking</div>
         </div>
         <StatsCards stats={stats} />
+        
+        {/* Charts Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+              📈 Analytics Dashboard
+            </h2>
+            <div className="text-sm text-slate-500">Visual insights from your data</div>
+          </div>
+          
+          <MovementStatsChart stats={stats} />
+          
+          {isAdmin && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <DailyTrendChart history={history} days={7} />
+              <DailyTrendChart history={history} days={30} />
+            </div>
+          )}
+        </div>
+        
         {isAdmin && userSummary.length > 0 && (
           <div className="bg-white rounded-2xl shadow-lg p-4">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="text-xl font-bold text-slate-800">User Movement Summary</h3>
+                <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                  👥 User Movement Summary
+                </h3>
                 <div className="text-sm text-slate-500">Ranked by total movements logged.</div>
               </div>
             </div>

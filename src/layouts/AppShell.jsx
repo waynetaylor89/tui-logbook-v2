@@ -38,17 +38,17 @@ export default function AppShell({ fleetCount, currentUser, isAdmin, onLogout })
             {isMobileMenuOpen && (
               <div className="mt-4 space-y-2">
                 <NavLink to="/" end className={navClass} onClick={() => setIsMobileMenuOpen(false)}>
-                  Home
+                  🏠 Home
                 </NavLink>
                 <NavLink to="/movements" className={navClass} onClick={() => setIsMobileMenuOpen(false)}>
-                  Aircraft Movements
+                  ✈️ Aircraft Movements
                 </NavLink>
                 <NavLink to="/records" className={navClass} onClick={() => setIsMobileMenuOpen(false)}>
-                  Movement Records
+                  📋 Movement Records
                 </NavLink>
                 {isAdmin && (
                   <NavLink to="/users" className={navClass} onClick={() => setIsMobileMenuOpen(false)}>
-                    Manage Users
+                    👥 Manage Users
                   </NavLink>
                 )}
               </div>
@@ -58,17 +58,17 @@ export default function AppShell({ fleetCount, currentUser, isAdmin, onLogout })
           {/* Desktop Navigation */}
           <div className="hidden lg:block bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-4 flex flex-wrap gap-2 border border-sky-100">
             <NavLink to="/" end className={navClass}>
-              Home
+              🏠 Home
             </NavLink>
             <NavLink to="/movements" className={navClass}>
-              Aircraft Movements
+              ✈️ Aircraft Movements
             </NavLink>
             <NavLink to="/records" className={navClass}>
-              Movement Records
+              📋 Movement Records
             </NavLink>
             {isAdmin && (
               <NavLink to="/users" className={navClass}>
-                Manage Users
+                👥 Manage Users
               </NavLink>
             )}
           </div>
