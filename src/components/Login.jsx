@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames }) => {
   const [username, setUsername] = useState("");
@@ -8,6 +8,18 @@ const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames }) => {
   const [forgotMode, setForgotMode] = useState(null);
   const [recoveryResult, setRecoveryResult] = useState("");
   const [message, setMessage] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+
+  // Load saved credentials on component mount
+  useEffect(() => {
+    const savedUsername = localStorage.getItem('tui-logbook-remember-username');
+    const savedPassword = localStorage.getItem('tui-logbook-remember-password');
+    const savedRememberMe = localStorage.getItem('tui-logbook-remember-me') === 'true';
+    
+    if (savedUsername) setUsername(savedUsername);
+    if (savedPassword) setPassword(savedPassword);
+    setRememberMe(savedRememberMe);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -57,6 +69,17 @@ const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames }) => {
       }
     } else {
       if (await onLogin(username.trim(), password)) {
+        // Save credentials if remember me is checked
+        if (rememberMe) {
+          localStorage.setItem('tui-logbook-remember-username', username.trim());
+          localStorage.setItem('tui-logbook-remember-password', password);
+          localStorage.setItem('tui-logbook-remember-me', 'true');
+        } else {
+          // Clear saved credentials if remember me is unchecked
+          localStorage.removeItem('tui-logbook-remember-username');
+          localStorage.removeItem('tui-logbook-remember-password');
+          localStorage.removeItem('tui-logbook-remember-me');
+        }
         setMessage("");
       } else {
         setMessage("Invalid username or password.");
@@ -113,6 +136,19 @@ const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames }) => {
           {recoveryResult && (
             <div className="mb-4 text-sm text-slate-700 bg-slate-100 rounded-md p-3">
               {recoveryResult}
+            </div>
+          )}
+          {!isRegistering && !forgotMode && (
+            <div className="mb-4">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="mr-2"
+                />
+                <span className="text-gray-700">Remember username and password</span>
+              </label>
             </div>
           )}
           <button

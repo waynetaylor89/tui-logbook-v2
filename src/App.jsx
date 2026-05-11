@@ -28,11 +28,49 @@ const DEFAULT_FLEET = [
 export default function AircraftMovementLogbook() {
   console.log("App component is rendering!");
 
-  // Local state management instead of Zustand
-  const [currentUser, setCurrentUser] = useState(null);
-  const [fleet, setFleet] = useState(DEFAULT_FLEET);
-  const [history, setHistory] = useState({});
-  const [users, setUsers] = useState({});
+  // Load saved user session on app start
+  useEffect(() => {
+    const savedUser = localStorage.getItem('tui-logbook-currentUser');
+    if (savedUser) {
+      setCurrentUser(savedUser);
+    }
+    
+    const savedUsers = localStorage.getItem('tui-logbook-users');
+    if (savedUsers) {
+      setUsers(JSON.parse(savedUsers));
+    }
+    
+    const savedHistory = localStorage.getItem('tui-logbook-history');
+    if (savedHistory) {
+      setHistory(JSON.parse(savedHistory));
+    }
+    
+    const savedFleet = localStorage.getItem('tui-logbook-fleet');
+    if (savedFleet) {
+      setFleet(JSON.parse(savedFleet));
+    }
+  }, []);
+
+  // Save data to localStorage when it changes
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem('tui-logbook-currentUser', currentUser);
+    } else {
+      localStorage.removeItem('tui-logbook-currentUser');
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    localStorage.setItem('tui-logbook-users', JSON.stringify(users));
+  }, [users]);
+
+  useEffect(() => {
+    localStorage.setItem('tui-logbook-history', JSON.stringify(history));
+  }, [history]);
+
+  useEffect(() => {
+    localStorage.setItem('tui-logbook-fleet', JSON.stringify(fleet));
+  }, [fleet]);
   
   // Login function using local state
   const handleLogin = async (username, password) => {
