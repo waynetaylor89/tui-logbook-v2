@@ -2,6 +2,7 @@ import { useState } from "react";
 import RecordsPanel from "../components/RecordsPanel.jsx";
 import { NoRecordsEmpty, NoResultsEmpty } from "../components/EmptyState.jsx";
 import AdvancedSearch from "../components/AdvancedSearch.jsx";
+import ExportOptions from "../components/ExportOptions.jsx";
 
 export default function RecordsPage({
   isAdmin,
@@ -124,6 +125,16 @@ export default function RecordsPage({
           stats={stats}
         />
       )}
+      
+      {/* Export Options */}
+      <ExportOptions 
+        data={displayHistory}
+        isAdmin={isAdmin}
+        title="Movement Records"
+        onExportComplete={(type) => {
+          console.log(`Export completed: ${type}`);
+        }}
+      />
     </div>
   );
 }
