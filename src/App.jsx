@@ -28,50 +28,67 @@ const DEFAULT_FLEET = [
 export default function AircraftMovementLogbook() {
   console.log("App component is rendering!");
 
-  // Load saved user session on app start
-  useEffect(() => {
-    const savedUser = localStorage.getItem('tui-logbook-currentUser');
-    if (savedUser) {
-      setCurrentUser(savedUser);
+  // Load saved data with try-catch to avoid errors
+  const getSavedData = (key, defaultValue) => {
+    try {
+      const saved = localStorage.getItem(key);
+      return saved ? JSON.parse(saved) : defaultValue;
+    } catch (error) {
+      console.error('Error loading saved data:', error);
+      return defaultValue;
     }
-    
-    const savedUsers = localStorage.getItem('tui-logbook-users');
-    if (savedUsers) {
-      setUsers(JSON.parse(savedUsers));
-    }
-    
-    const savedHistory = localStorage.getItem('tui-logbook-history');
-    if (savedHistory) {
-      setHistory(JSON.parse(savedHistory));
-    }
-    
-    const savedFleet = localStorage.getItem('tui-logbook-fleet');
-    if (savedFleet) {
-      setFleet(JSON.parse(savedFleet));
-    }
-  }, []);
+  };
 
-  // Save data to localStorage when it changes
-  useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem('tui-logbook-currentUser', currentUser);
-    } else {
-      localStorage.removeItem('tui-logbook-currentUser');
+  // Local state management with initial values from localStorage
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      return localStorage.getItem('tui-logbook-currentUser') || null;
+    } catch (error) {
+      return null;
     }
-  }, [currentUser]);
-
-  useEffect(() => {
-    localStorage.setItem('tui-logbook-users', JSON.stringify(users));
-  }, [users]);
-
-  useEffect(() => {
-    localStorage.setItem('tui-logbook-history', JSON.stringify(history));
-  }, [history]);
-
-  useEffect(() => {
-    localStorage.setItem('tui-logbook-fleet', JSON.stringify(fleet));
-  }, [fleet]);
+  });
   
+  const [fleet, setFleet] = useState(() => getSavedData('tui-logbook-fleet', DEFAULT_FLEET));
+  const [history, setHistory] = useState(() => getSavedData('tui-logbook-history', {}));
+  const [users, setUsers] = useState(() => getSavedData('tui-logbook-users', {}));
+
+  // Simple save functions
+  const saveCurrentUser = (user) => {
+    try {
+      if (user) {
+        localStorage.setItem('tui-logbook-currentUser', user);
+      } else {
+        localStorage.removeItem('tui-logbook-currentUser');
+      }
+    } catch (error) {
+      console.error('Error saving current user:', error);
+    }
+  };
+
+  const saveUsers = (usersData) => {
+    try {
+      localStorage.setItem('tui-logbook-users', JSON.stringify(usersData));
+    } catch (error) {
+      console.error('Error saving users:', error);
+    }
+  };
+
+  const saveHistory = (historyData) => {
+    try {
+      localStorage.setItem('tui-logbook-history', JSON.stringify(historyData));
+    } catch (error) {
+      console.error('Error saving history:', error);
+    }
+  };
+
+  const saveFleet = (fleetData) => {
+    try {
+      localStorage.setItem('tui-logbook-fleet', JSON.stringify(fleetData));
+    } catch (error) {
+      console.error('Error saving fleet:', error);
+    }
+  };
+
   // Login function using local state
   const handleLogin = async (username, password) => {
     console.log("Login attempt:", username, password);
@@ -79,6 +96,7 @@ export default function AircraftMovementLogbook() {
     // Simple admin login
     if (username === "wayne" && password === "admin") {
       setCurrentUser(username);
+      saveCurrentUser(username);
       return true;
     }
     
@@ -86,6 +104,7 @@ export default function AircraftMovementLogbook() {
     const user = users[username];
     if (user && user.password === password) {
       setCurrentUser(username);
+      saveCurrentUser(username);
       return true;
     }
     
@@ -94,53 +113,61 @@ export default function AircraftMovementLogbook() {
   
   const handleLogout = () => {
     setCurrentUser(null);
+    saveCurrentUser(null);
   };
 
   const handleRegister = async (username, password) => {
     if (users[username]) return false;
-    setUsers(prev => ({ ...prev, [username]: { password } }));
+    const newUsers = { ...users, [username]: { password } };
+    setUsers(newUsers);
+    saveUsers(newUsers);
     return true;
   };
 
   const handleDeleteUser = (username) => {
     if (username === "wayne") return;
-    setUsers(prev => {
-      const newUsers = { ...prev };
-      delete newUsers[username];
-      return newUsers;
-    });
-    setHistory(prev => {
-      const newHistory = { ...prev };
-      delete newHistory[username];
-      return newHistory;
-    });
+    const newUsers = { ...users };
+    delete newUsers[username];
+    setUsers(newUsers);
+    saveUsers(newUsers);
+    
+    const newHistory = { ...history };
+    delete newHistory[username];
+    setHistory(newHistory);
+    saveHistory(newHistory);
   };
 
   const addLogEntryToHistory = (entry) => {
-    setHistory(prev => ({
-      ...prev,
-      [currentUser]: [...(prev[currentUser] || []), entry]
-    }));
+    const newHistory = {
+      ...history,
+      [currentUser]: [...(history[currentUser] || []), entry]
+    };
+    setHistory(newHistory);
+    saveHistory(newHistory);
   };
 
   const handleDeleteEntry = (id, owner) => {
     if (owner !== currentUser && currentUser !== "wayne") return;
     
-    setHistory(prev => ({
-      ...prev,
-      [owner]: prev[owner].filter(item => item.id !== id)
-    }));
+    const newHistory = {
+      ...history,
+      [owner]: history[owner].filter(item => item.id !== id)
+    };
+    setHistory(newHistory);
+    saveHistory(newHistory);
   };
 
   const handleUpdateEntry = (id, owner, updates) => {
     if (owner !== currentUser && currentUser !== "wayne") return false;
     
-    setHistory(prev => ({
-      ...prev,
-      [owner]: prev[owner].map(item => 
+    const newHistory = {
+      ...history,
+      [owner]: history[owner].map(item => 
         item.id === id ? { ...item, ...updates, updatedAt: new Date().toISOString(), updatedBy: currentUser } : item
       )
-    }));
+    };
+    setHistory(newHistory);
+    saveHistory(newHistory);
     return true;
   };
 
@@ -259,6 +286,7 @@ export default function AircraftMovementLogbook() {
   const handleResetFleet = () => {
     if (window.confirm("Reset fleet to default TUI Airways list? This will remove any custom additions.")) {
       setFleet(DEFAULT_FLEET);
+      saveFleet(DEFAULT_FLEET);
       setSuccessMessage("Fleet reset to default.");
     }
   };
@@ -273,7 +301,9 @@ export default function AircraftMovementLogbook() {
       alert("Aircraft already exists in fleet.");
       return;
     }
-    setFleet(prev => [...prev, newAircraft]);
+    const newFleet = [...fleet, newAircraft];
+    setFleet(newFleet);
+    saveFleet(newFleet);
     setNewReg("");
     setNewType("");
     setSuccessMessage("Aircraft added to fleet.");
