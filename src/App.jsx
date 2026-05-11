@@ -1,15 +1,5 @@
 import { useState } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
-
-// Test Login component
-function TestLogin() {
-  return (
-    <div style={{ padding: '20px', backgroundColor: 'lightgreen', minHeight: '100vh' }}>
-      <h1>Test Login Page</h1>
-      <p>Login component is working!</p>
-    </div>
-  );
-}
+import Login from "./components/Login.jsx";
 
 export default function AircraftMovementLogbook() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -17,7 +7,7 @@ export default function AircraftMovementLogbook() {
   console.log("App component is rendering!");
   
   if (!currentUser) {
-    return <TestLogin />;
+    return <Login onLogin={() => setCurrentUser("test")} />;
   }
   
   return (
