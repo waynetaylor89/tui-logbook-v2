@@ -1,7 +1,7 @@
 import { hashPassword } from "../authSecurity.js";
 
-const ADMIN_USERNAME = "wayne";
-const ADMIN_PASSWORD = "admin";
+const ADMIN_USERNAME = import.meta.env.VITE_ADMIN_USERNAME || "admin";
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "admin";
 
 const isLegacyPasswordMatch = (record, password) => record?.password && record.password === password;
 

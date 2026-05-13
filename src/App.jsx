@@ -9,248 +9,59 @@ import UsersPage from "./pages/UsersPage.jsx";
 import { exportLogbookCSV } from "./utils/exportCSV.js";
 import { AIRPORT, AIRPORT_STANDS, MOVEMENT_TYPES, TUI_AIRCRAFT_TYPES } from "./config/logbookConfig.js";
 import { LoadingOverlay } from "./components/Spinner.jsx";
-
-// Default TUI fleet data - Actual TUI Airways fleet from Planespotters.net
-const DEFAULT_FLEET = [
-  // Boeing 737-800 Family
-  "G-FDZD - Boeing 737-800",
-  "G-FDZR - Boeing 737-800",
-  "G-FDZS - Boeing 737-800",
-  "G-FDZX - Boeing 737-800",
-  "G-FDZY - Boeing 737-800",
-  "G-FDZZ - Boeing 737-800",
-  "G-TAWA - Boeing 737-800",
-  "G-TAWB - Boeing 737-800",
-  "G-TAWC - Boeing 737-800",
-  "G-TAWD - Boeing 737-800",
-  "G-TAWG - Boeing 737-800",
-  "G-TAWI - Boeing 737-800",
-  "G-TAWK - Boeing 737-800",
-  "G-TAWM - Boeing 737-800",
-  "G-TAWO - Boeing 737-800",
-  "G-TAWP - Boeing 737-800",
-  "G-TAWS - Boeing 737-800",
-  "G-TAWU - Boeing 737-800",
-  "G-TAWV - Boeing 737-800",
-  "G-TAWW - Boeing 737-800",
-  "G-TAWX - Boeing 737-800",
-  "G-TAWY - Boeing 737-800",
-  "G-TAWZ - Boeing 737-800",
-  "G-TUKF - Boeing 737-800",
-  "G-TUKO - Boeing 737-800",
-  "G-TUKR - Boeing 737-800",
-  "G-TUKS - Boeing 737-800",
-  "G-TUKT - Boeing 737-800",
-  "G-TUKW - Boeing 737-800",
-  "G-TUKX - Boeing 737-800",
-  
-  // Boeing 737 MAX 8 Family
-  "G-TUMA - Boeing 737 MAX 8",
-  "G-TUMB - Boeing 737 MAX 8",
-  "G-TUMC - Boeing 737 MAX 8",
-  "G-TUMD - Boeing 737 MAX 8",
-  "G-TUMF - Boeing 737 MAX 8",
-  "G-TUMG - Boeing 737 MAX 8",
-  "G-TUMH - Boeing 737 MAX 8",
-  "G-TUMK - Boeing 737 MAX 8",
-  "G-TUML - Boeing 737 MAX 8",
-  "G-TUMM - Boeing 737 MAX 8",
-  "G-TUMN - Boeing 737 MAX 8",
-  "G-TUMO - Boeing 737 MAX 8",
-  "G-TUMP - Boeing 737 MAX 8",
-  "G-TUMS - Boeing 737 MAX 8",
-  "G-TUMT - Boeing 737 MAX 8",
-  "G-TUMU - Boeing 737 MAX 8",
-  "G-TUMW - Boeing 737 MAX 8",
-  "G-TUMX - Boeing 737 MAX 8",
-  "G-TUMY - Boeing 737 MAX 8",
-  "G-TUMZ - Boeing 737 MAX 8",
-  "G-TUOA - Boeing 737 MAX 8",
-  "G-TUOB - Boeing 737 MAX 8",
-  "G-TUOD - Boeing 737 MAX 8",
-  "G-TUPA - Boeing 737 MAX 8",
-  "G-TUPB - Boeing 737 MAX 8",
-  "G-TUPC - Boeing 737 MAX 8",
-  "G-TUPD - Boeing 737 MAX 8",
-  "G-TUPE - Boeing 737 MAX 8",
-  "G-TUPF - Boeing 737 MAX 8",
-  "G-TUPG - Boeing 737 MAX 8",
-  "G-TUPH - Boeing 737 MAX 8",
-  
-  // Boeing 787-8 Dreamliner
-  "G-TUIA - Boeing 787-8 Dreamliner",
-  "G-TUIB - Boeing 787-8 Dreamliner",
-  "G-TUIC - Boeing 787-8 Dreamliner",
-  "G-TUID - Boeing 787-8 Dreamliner",
-  "G-TUIE - Boeing 787-8 Dreamliner",
-  "G-TUIF - Boeing 787-8 Dreamliner",
-  "G-TUIH - Boeing 787-8 Dreamliner",
-  "G-TUII - Boeing 787-8 Dreamliner",
-  "G-TUIP - Boeing 787-8 Dreamliner",
-  
-  // Boeing 787-9 Dreamliner
-  "G-TUIJ - Boeing 787-9 Dreamliner",
-  "G-TUIL - Boeing 787-9 Dreamliner",
-  "G-TUIM - Boeing 787-9 Dreamliner",
-  "G-TUIN - Boeing 787-9 Dreamliner",
-  "G-TUIO - Boeing 787-9 Dreamliner"
-];
+import useLogbookStore from "./store/useLogbookStore.js";
 
 export default function AircraftMovementLogbook() {
-  console.log("App component is rendering!");
+  // Zustand store
+  const {
+    currentUser,
+    users,
+    fleet,
+    history,
+    hasHydrated,
+    login,
+    logout,
+    register,
+    deleteUser,
+    addLogEntry,
+    deleteEntry,
+    updateEntry,
+    addAircraftToFleet,
+    resetFleet,
+  } = useLogbookStore();
 
-  // Load saved data with try-catch to avoid errors
-  const getSavedData = (key, defaultValue) => {
-    try {
-      const saved = localStorage.getItem(key);
-      return saved ? JSON.parse(saved) : defaultValue;
-    } catch (error) {
-      console.error('Error loading saved data:', error);
-      return defaultValue;
-    }
-  };
+  const isAdmin = currentUser === (import.meta.env.VITE_ADMIN_USERNAME || "admin");
 
-  // Local state management with initial values from localStorage
-  const [currentUser, setCurrentUser] = useState(() => {
-    try {
-      return localStorage.getItem('tui-logbook-currentUser') || null;
-    } catch (error) {
-      return null;
-    }
-  });
-  
-  const [fleet, setFleet] = useState(() => getSavedData('tui-logbook-fleet', DEFAULT_FLEET));
-  const [history, setHistory] = useState(() => getSavedData('tui-logbook-history', {}));
-  const [users, setUsers] = useState(() => getSavedData('tui-logbook-users', {}));
-
-  // Simple save functions
-  const saveCurrentUser = (user) => {
-    try {
-      if (user) {
-        localStorage.setItem('tui-logbook-currentUser', user);
-      } else {
-        localStorage.removeItem('tui-logbook-currentUser');
-      }
-    } catch (error) {
-      console.error('Error saving current user:', error);
-    }
-  };
-
-  const saveUsers = (usersData) => {
-    try {
-      localStorage.setItem('tui-logbook-users', JSON.stringify(usersData));
-    } catch (error) {
-      console.error('Error saving users:', error);
-    }
-  };
-
-  const saveHistory = (historyData) => {
-    try {
-      localStorage.setItem('tui-logbook-history', JSON.stringify(historyData));
-    } catch (error) {
-      console.error('Error saving history:', error);
-    }
-  };
-
-  const saveFleet = (fleetData) => {
-    try {
-      localStorage.setItem('tui-logbook-fleet', JSON.stringify(fleetData));
-    } catch (error) {
-      console.error('Error saving fleet:', error);
-    }
-  };
-
-  // Login function using local state
   const handleLogin = async (username, password) => {
-    console.log("Login attempt:", username, password);
-    setIsLoading(true);
-    setLoadingMessage("Authenticating...");
-    
-    // Simulate async operation
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Simple admin login
-    if (username === "wayne" && password === "admin") {
-      setCurrentUser(username);
-      saveCurrentUser(username);
-      setIsLoading(false);
-      return true;
-    }
-    
-    // Check if user exists
-    const user = users[username];
-    if (user && user.password === password) {
-      setCurrentUser(username);
-      saveCurrentUser(username);
-      setIsLoading(false);
-      return true;
-    }
-    
-    setIsLoading(false);
-    return false;
+    const success = await login(username, password);
+    return success;
   };
-  
-  const handleLogout = () => {
-    setCurrentUser(null);
-    saveCurrentUser(null);
-  };
+
+  const handleLogout = () => logout();
 
   const handleRegister = async (username, password) => {
-    if (users[username]) return false;
-    const newUsers = { ...users, [username]: { password } };
-    setUsers(newUsers);
-    saveUsers(newUsers);
-    return true;
+    return await register(username, password);
   };
 
   const handleDeleteUser = (username) => {
-    if (username === "wayne") return;
-    const newUsers = { ...users };
-    delete newUsers[username];
-    setUsers(newUsers);
-    saveUsers(newUsers);
-    
-    const newHistory = { ...history };
-    delete newHistory[username];
-    setHistory(newHistory);
-    saveHistory(newHistory);
+    deleteUser(username);
   };
 
   const addLogEntryToHistory = (entry) => {
-    const newHistory = {
-      ...history,
-      [currentUser]: [...(history[currentUser] || []), entry]
-    };
-    setHistory(newHistory);
-    saveHistory(newHistory);
+    addLogEntry(entry);
   };
 
   const handleDeleteEntry = (id, owner) => {
-    if (owner !== currentUser && currentUser !== "wayne") return;
-    
-    const newHistory = {
-      ...history,
-      [owner]: history[owner].filter(item => item.id !== id)
-    };
-    setHistory(newHistory);
-    saveHistory(newHistory);
+    if (owner !== currentUser && !isAdmin) return;
+    deleteEntry(id, owner);
   };
 
   const handleUpdateEntry = (id, owner, updates) => {
-    if (owner !== currentUser && currentUser !== "wayne") return false;
-    
-    const newHistory = {
-      ...history,
-      [owner]: history[owner].map(item => 
-        item.id === id ? { ...item, ...updates, updatedAt: new Date().toISOString(), updatedBy: currentUser } : item
-      )
-    };
-    setHistory(newHistory);
-    saveHistory(newHistory);
+    if (owner !== currentUser && !isAdmin) return false;
+    updateEntry(id, owner, updates);
     return true;
   };
 
-  const isAdmin = currentUser === "wayne";
 
   const [activeTab, setActiveTab] = useState("ALL");
   const [currentPage, setCurrentPage] = useState(1);
@@ -366,8 +177,7 @@ export default function AircraftMovementLogbook() {
 
   const handleResetFleet = () => {
     if (window.confirm("Reset fleet to default TUI Airways list? This will remove any custom additions.")) {
-      setFleet(DEFAULT_FLEET);
-      saveFleet(DEFAULT_FLEET);
+      resetFleet();
       setSuccessMessage("Fleet reset to default.");
     }
   };
@@ -382,9 +192,7 @@ export default function AircraftMovementLogbook() {
       alert("Aircraft already exists in fleet.");
       return;
     }
-    const newFleet = [...fleet, newAircraft];
-    setFleet(newFleet);
-    saveFleet(newFleet);
+    addAircraftToFleet(newReg, newType);
     setNewReg("");
     setNewType("");
     setSuccessMessage("Aircraft added to fleet.");
@@ -429,7 +237,6 @@ export default function AircraftMovementLogbook() {
   };
 
   if (!currentUser) {
-    console.log("Showing login screen - currentUser:", currentUser);
     return (
       <Login
         onLogin={handleLogin}
@@ -439,8 +246,6 @@ export default function AircraftMovementLogbook() {
       />
     );
   }
-
-  console.log("Rendering main app - currentUser:", currentUser);
 
   return (
     <>
