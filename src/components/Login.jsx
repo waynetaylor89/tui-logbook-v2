@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames }) => {
+const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames, onRegisterBiometric, onLoginWithBiometric, hasBiometricCredential, isBiometricSupported }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -9,6 +9,7 @@ const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames }) => {
   const [recoveryResult, setRecoveryResult] = useState("");
   const [message, setMessage] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [biometricLoading, setBiometricLoading] = useState(false);
 
   // Load saved credentials on component mount
   useEffect(() => {
@@ -20,6 +21,40 @@ const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames }) => {
     if (savedPassword) setPassword(savedPassword);
     setRememberMe(savedRememberMe);
   }, []);
+
+  const handleBiometricLogin = async () => {
+    if (!username.trim()) {
+      setMessage("Please enter your username first.");
+      return;
+    }
+    setBiometricLoading(true);
+    setMessage("");
+    try {
+      await onLoginWithBiometric(username.trim());
+      setMessage("");
+    } catch (error) {
+      setMessage(error.message || "Biometric authentication failed.");
+    } finally {
+      setBiometricLoading(false);
+    }
+  };
+
+  const handleBiometricRegister = async () => {
+    if (!username.trim()) {
+      setMessage("Please enter your username first.");
+      return;
+    }
+    setBiometricLoading(true);
+    setMessage("");
+    try {
+      await onRegisterBiometric(username.trim());
+      setMessage("Biometric registration successful! You can now use biometric login.");
+    } catch (error) {
+      setMessage(error.message || "Biometric registration failed.");
+    } finally {
+      setBiometricLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -149,6 +184,30 @@ const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames }) => {
                 />
                 <span className="text-gray-700">Remember username and password</span>
               </label>
+            </div>
+          )}
+          {!isRegistering && !forgotMode && isBiometricSupported && (
+            <div className="mb-4">
+              <button
+                type="button"
+                onClick={handleBiometricLogin}
+                disabled={biometricLoading || !username.trim()}
+                className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                {biometricLoading ? "Verifying..." : "Login with Biometrics"}
+              </button>
+            </div>
+          )}
+          {!isRegistering && !forgotMode && isBiometricSupported && !hasBiometricCredential(username) && (
+            <div className="mb-4">
+              <button
+                type="button"
+                onClick={handleBiometricRegister}
+                disabled={biometricLoading || !username.trim()}
+                className="w-full bg-purple-500 text-white py-2 px-4 rounded-md hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
+              >
+                {biometricLoading ? "Registering..." : "Register Biometrics"}
+              </button>
             </div>
           )}
           <button

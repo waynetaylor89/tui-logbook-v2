@@ -1,4 +1,5 @@
 import { hashPassword } from "../authSecurity.js";
+import { registerBiometric, authenticateWithBiometric, isWebAuthnSupported } from "../webAuthn.js";
 
 const ADMIN_USERNAME = import.meta.env.VITE_ADMIN_USERNAME || "admin";
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "admin";
@@ -86,5 +87,59 @@ export const createAuthSlice = (set, get) => ({
       },
     });
     return true;
+  },
+
+  isBiometricSupported: () => isWebAuthnSupported(),
+
+  registerBiometric: async (username) => {
+    if (!isWebAuthnSupported()) {
+      throw new Error('Biometric authentication is not supported on this device');
+    }
+
+    const users = get().users;
+    if (!users[username]) {
+      throw new Error('User does not exist');
+    }
+
+    try {
+      const credential = await registerBiometric(username);
+      set({
+        users: {
+          ...users,
+          [username]: {
+            ...users[username],
+            biometricCredential: credential,
+          },
+        },
+      });
+      return true;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  loginWithBiometric: async (username) => {
+    if (!isWebAuthnSupported()) {
+      throw new Error('Biometric authentication is not supported on this device');
+    }
+
+    const users = get().users;
+    const record = users[username];
+    if (!record || !record.biometricCredential) {
+      throw new Error('No biometric credential registered for this user');
+    }
+
+    try {
+      await authenticateWithBiometric(record.biometricCredential.credentialId);
+      set({ currentUser: username });
+      return true;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  hasBiometricCredential: (username) => {
+    const users = get().users;
+    return !!(users[username] && users[username].biometricCredential);
   },
 });

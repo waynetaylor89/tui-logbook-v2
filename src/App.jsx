@@ -28,6 +28,10 @@ export default function AircraftMovementLogbook() {
     updateEntry,
     addAircraftToFleet,
     resetFleet,
+    registerBiometric,
+    loginWithBiometric,
+    hasBiometricCredential,
+    isBiometricSupported,
   } = useLogbookStore();
 
   const isAdmin = currentUser === (import.meta.env.VITE_ADMIN_USERNAME || "admin");
@@ -243,6 +247,10 @@ export default function AircraftMovementLogbook() {
         onRegister={handleRegister}
         onRecoverPassword={() => {}}
         onListUsernames={() => Object.keys(users)}
+        onRegisterBiometric={registerBiometric}
+        onLoginWithBiometric={loginWithBiometric}
+        hasBiometricCredential={hasBiometricCredential}
+        isBiometricSupported={isBiometricSupported()}
       />
     );
   }
