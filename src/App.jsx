@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Login from "./components/Login.jsx";
+import UserSettings from "./components/UserSettings.jsx";
 import AppShell from "./layouts/AppShell.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import MovementsPage from "./pages/MovementsPage.jsx";
@@ -32,6 +33,7 @@ export default function AircraftMovementLogbook() {
     loginWithBiometric,
     hasBiometricCredential,
     isBiometricSupported,
+    deleteBiometricCredential,
   } = useLogbookStore();
 
   const isAdmin = currentUser === (import.meta.env.VITE_ADMIN_USERNAME || "admin");
@@ -355,6 +357,18 @@ export default function AircraftMovementLogbook() {
             ) : (
               <Navigate to="/" replace />
             )
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <UserSettings
+              currentUser={currentUser}
+              hasBiometricCredential={hasBiometricCredential}
+              isBiometricSupported={isBiometricSupported()}
+              onRegisterBiometric={registerBiometric}
+              onDeleteBiometricCredential={deleteBiometricCredential}
+            />
           }
         />
       </Route>

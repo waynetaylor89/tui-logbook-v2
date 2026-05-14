@@ -142,4 +142,19 @@ export const createAuthSlice = (set, get) => ({
     const users = get().users;
     return !!(users[username] && users[username].biometricCredential);
   },
+
+  deleteBiometricCredential: (username) => {
+    const users = get().users;
+    if (!users[username] || !users[username].biometricCredential) {
+      return false;
+    }
+    const { biometricCredential, ...rest } = users[username];
+    set({
+      users: {
+        ...users,
+        [username]: rest,
+      },
+    });
+    return true;
+  },
 });
