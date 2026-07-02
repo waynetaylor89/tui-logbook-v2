@@ -24,9 +24,9 @@ export default function MovementForm({
   const showWarning = /787-8|787-800|boeing 787-800/i.test(normalizedAircraft);
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-4 space-y-4">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-4 space-y-4">
 
-      <h2 className="text-xl font-bold text-slate-800">
+      <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">
         New Movement
       </h2>
 
@@ -34,7 +34,7 @@ export default function MovementForm({
         type="date"
         value={movementDate}
         onChange={(e) => setMovementDate(e.target.value)}
-        className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+        className="w-full border rounded-xl px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
       />
 
       <div className="relative">
@@ -50,11 +50,11 @@ export default function MovementForm({
             setTimeout(() => setShowAircraftSuggestions(false), 200)
           }
           placeholder="Aircraft Registration"
-          className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+          className="w-full border rounded-xl px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
         />
 
         {showAircraftSuggestions && (
-          <div className="absolute z-20 w-full mt-1 bg-white border rounded-xl shadow-lg max-h-60 overflow-y-auto">
+          <div className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-700 border dark:border-slate-600 rounded-xl shadow-lg max-h-60 overflow-y-auto">
 
             {filteredAircraftOptions.map((plane) => (
               <button
@@ -64,7 +64,7 @@ export default function MovementForm({
                   setAircraft(plane);
                   setShowAircraftSuggestions(false);
                 }}
-                className="w-full text-left px-4 py-3 hover:bg-blue-100"
+                className="w-full text-left px-4 py-3 hover:bg-blue-100 dark:hover:bg-slate-600 dark:text-white"
               >
                 {plane}
               </button>
@@ -76,18 +76,18 @@ export default function MovementForm({
       </div>
 
       {showWarning && (
-        <div className="rounded-2xl border border-orange-300 bg-orange-50 px-4 py-3 text-sm text-orange-800">
+        <div className="rounded-2xl border border-orange-300 bg-orange-50 dark:bg-orange-900/30 dark:border-orange-700 px-4 py-3 text-sm text-orange-800 dark:text-orange-300">
           Warning: Boeing 787-800 selected — See engineer for pins.
         </div>
       )}
 
       {successMessage && (
-        <div className="rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 flex items-center justify-between gap-3">
+        <div className="rounded-2xl border border-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 dark:border-emerald-700 px-4 py-3 text-sm text-emerald-800 dark:text-emerald-300 flex items-center justify-between gap-3">
           <span>{successMessage}</span>
           <button
             type="button"
             onClick={clearSuccessMessage}
-            className="text-emerald-700 font-semibold hover:text-emerald-900"
+            className="text-emerald-700 dark:text-emerald-400 font-semibold hover:text-emerald-900 dark:hover:text-emerald-300"
           >
             Dismiss
           </button>
@@ -97,7 +97,7 @@ export default function MovementForm({
       <select
         value={movementType}
         onChange={(e) => setMovementType(e.target.value)}
-        className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+        className="w-full border rounded-xl px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
       >
         {movementTypes.map((type) => (
           <option key={type} value={type}>
@@ -113,7 +113,7 @@ export default function MovementForm({
         }
         placeholder="From Stand"
         list="from-stands"
-        className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+        className="w-full border rounded-xl px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
       />
 
       <datalist id="from-stands">
@@ -129,7 +129,7 @@ export default function MovementForm({
         }
         placeholder="To Stand"
         list="to-stands"
-        className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+        className="w-full border rounded-xl px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
       />
 
       <datalist id="to-stands">
@@ -143,12 +143,12 @@ export default function MovementForm({
         onChange={(e) => setNotes(e.target.value)}
         placeholder="Movement Notes"
         rows={3}
-        className="w-full border rounded-xl px-4 py-3 bg-slate-50 resize-none"
+        className="w-full border rounded-xl px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:border-slate-600 dark:text-white resize-none"
       />
 
       <button
         onClick={addLogEntry}
-        className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold"
+        className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 dark:hover:bg-blue-500"
       >
         Add Movement
       </button>

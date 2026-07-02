@@ -1,10 +1,13 @@
-const EmptyState = ({ 
+import PropTypes from "prop-types";
+import { memo } from "react";
+
+const EmptyState = memo(function EmptyState({ 
   icon, 
   title, 
   message, 
   action, 
   actionText 
-}) => {
+}) {
   return (
     <div className="flex flex-col items-center justify-center py-12 px-6">
       <div className="text-6xl mb-4 text-slate-300">
@@ -26,54 +29,93 @@ const EmptyState = ({
       )}
     </div>
   );
+});
+
+EmptyState.propTypes = {
+  icon: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+  message: PropTypes.string.isRequired,
+  action: PropTypes.func,
+  actionText: PropTypes.string,
 };
 
-export const NoMovementsEmpty = ({ onAddMovement }) => (
-  <EmptyState
-    icon="✈️"
-    title="No Aircraft Movements Yet"
-    message="Start tracking aircraft movements by adding your first movement record. This will help you monitor ground operations and stand usage."
-    action={onAddMovement}
-    actionText="Add First Movement"
-  />
-);
+export const NoMovementsEmpty = memo(function NoMovementsEmpty({ onAddMovement }) {
+  return (
+    <EmptyState
+      icon="✈️"
+      title="No Aircraft Movements Yet"
+      message="Start tracking aircraft movements by adding your first movement record. This will help you monitor ground operations and stand usage."
+      action={onAddMovement}
+      actionText="Add First Movement"
+    />
+  );
+});
 
-export const NoRecordsEmpty = ({ onAddMovement }) => (
-  <EmptyState
-    icon="📋"
-    title="No Movement Records"
-    message="Movement records will appear here once you start adding aircraft movements. Track all ground operations for better analysis."
-    action={onAddMovement}
-    actionText="Add Movement"
-  />
-);
+NoMovementsEmpty.propTypes = {
+  onAddMovement: PropTypes.func.isRequired,
+};
 
-export const NoUsersEmpty = ({ onRegister }) => (
-  <EmptyState
-    icon="👥"
-    title="No Users Registered"
-    message="Invite team members to help manage the logbook. Each user can track their own movements and contribute to the fleet operations."
-    action={onRegister}
-    actionText="Register First User"
-  />
-);
+export const NoRecordsEmpty = memo(function NoRecordsEmpty({ onAddMovement }) {
+  return (
+    <EmptyState
+      icon="📋"
+      title="No Movement Records"
+      message="Movement records will appear here once you start adding aircraft movements. Track all ground operations for better analysis."
+      action={onAddMovement}
+      actionText="Add Movement"
+    />
+  );
+});
 
-export const NoResultsEmpty = ({ searchTerm, onClearSearch }) => (
-  <EmptyState
-    icon="🔍"
-    title="No Results Found"
-    message={`No movements found matching "${searchTerm}". Try adjusting your search terms or browse all movements.`}
-    action={onClearSearch}
-    actionText="Clear Search"
-  />
-);
+NoRecordsEmpty.propTypes = {
+  onAddMovement: PropTypes.func.isRequired,
+};
 
-export const NoDataEmpty = ({ message = "No data available" }) => (
-  <EmptyState
-    icon="📊"
-    title="No Data Available"
-    message={message}
-  />
-);
+export const NoUsersEmpty = memo(function NoUsersEmpty({ onRegister }) {
+  return (
+    <EmptyState
+      icon="👥"
+      title="No Users Registered"
+      message="Invite team members to help manage the logbook. Each user can track their own movements and contribute to the fleet operations."
+      action={onRegister}
+      actionText="Register First User"
+    />
+  );
+});
+
+NoUsersEmpty.propTypes = {
+  onRegister: PropTypes.func.isRequired,
+};
+
+export const NoResultsEmpty = memo(function NoResultsEmpty({ searchTerm, onClearSearch }) {
+  return (
+    <EmptyState
+      icon="🔍"
+      title="No Results Found"
+      message={`No movements found matching "${searchTerm}". Try adjusting your search terms or browse all movements.`}
+      action={onClearSearch}
+      actionText="Clear Search"
+    />
+  );
+});
+
+NoResultsEmpty.propTypes = {
+  searchTerm: PropTypes.string.isRequired,
+  onClearSearch: PropTypes.func.isRequired,
+};
+
+export const NoDataEmpty = memo(function NoDataEmpty({ message = "No data available" }) {
+  return (
+    <EmptyState
+      icon="📊"
+      title="No Data Available"
+      message={message}
+    />
+  );
+});
+
+NoDataEmpty.propTypes = {
+  message: PropTypes.string,
+};
 
 export default EmptyState;

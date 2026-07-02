@@ -56,7 +56,7 @@ export const createAuthSlice = (set, get) => ({
     const users = get().users;
     if (users[username]) return false;
     const passwordHash = await hashPassword(password);
-    set({ users: { ...users, [username]: { passwordHash } } });
+    set({ users: { ...users, [username]: { passwordHash, notificationPreferences: { enabled: true, periodDays: 7 }, darkMode: false } } });
     return true;
   },
 
@@ -156,5 +156,54 @@ export const createAuthSlice = (set, get) => ({
       },
     });
     return true;
+  },
+
+  updateNotificationPreferences: (username, preferences) => {
+    const users = get().users;
+    if (!users[username]) return false;
+    set({
+      users: {
+        ...users,
+        [username]: {
+          ...users[username],
+          notificationPreferences: {
+            ...users[username].notificationPreferences,
+            ...preferences,
+          },
+        },
+      },
+    });
+    return true;
+  },
+
+  getNotificationPreferences: (username) => {
+    const users = get().users;
+    if (!users[username]) return { enabled: true, periodDays: 7 };
+    return users[username].notificationPreferences || { enabled: true, periodDays: 7 };
+  },
+
+  toggleDarkMode: (username) => {
+    const users = get().users;
+    if (!users[username]) return false;
+    set({
+      users: {
+        ...users,
+        [username]: {
+          ...users[username],
+          darkMode: !users[username].darkMode,
+        },
+      },
+    });
+    return true;
+  },
+
+  getDarkMode: (username) => {
+    const users = get().users;
+    if (!users[username]) return false;
+    return users[username].darkMode || false;
+  },
+
+  isAdmin: (username) => {
+    return username === ADMIN_USERNAME;
   },
 });

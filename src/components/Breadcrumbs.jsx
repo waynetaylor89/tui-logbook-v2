@@ -1,6 +1,8 @@
 import { useLocation, Link } from "react-router-dom";
+import PropTypes from "prop-types";
+import { memo } from "react";
 
-const Breadcrumbs = () => {
+const Breadcrumbs = memo(function Breadcrumbs() {
   const location = useLocation();
   
   const getBreadcrumbs = () => {
@@ -44,6 +46,6 @@ const Breadcrumbs = () => {
       {getBreadcrumbs()}
     </nav>
   );
-};
+});
 
 export default Breadcrumbs;

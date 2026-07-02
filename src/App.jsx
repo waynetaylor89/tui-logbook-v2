@@ -1,16 +1,23 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import Login from "./components/Login.jsx";
 import UserSettings from "./components/UserSettings.jsx";
 import AppShell from "./layouts/AppShell.jsx";
-import HomePage from "./pages/HomePage.jsx";
-import MovementsPage from "./pages/MovementsPage.jsx";
-import RecordsPage from "./pages/RecordsPage.jsx";
-import UsersPage from "./pages/UsersPage.jsx";
-import { exportLogbookCSV } from "./utils/exportCSV.js";
-import { AIRPORT, AIRPORT_STANDS, MOVEMENT_TYPES, TUI_AIRCRAFT_TYPES } from "./config/logbookConfig.js";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
+import { useToast, ToastContainer } from "./components/Toast.jsx";
 import { LoadingOverlay } from "./components/Spinner.jsx";
+import { exportLogbookCSV } from "./utils/exportCSV.js";
+import { requestNotificationPermission, checkAndNotifyInactivity, checkAndNotifyUpcomingInactivity } from "./utils/notifications.js";
+import { AIRPORT, AIRPORT_STANDS, MOVEMENT_TYPES, TUI_AIRCRAFT_TYPES } from "./config/logbookConfig.js";
 import useLogbookStore from "./store/useLogbookStore.js";
+import { useMovementForm } from "./hooks/useMovementForm.js";
+import { useMovementFilters } from "./hooks/useMovementFilters.js";
+
+// Code split pages for better performance
+const HomePage = lazy(() => import("./pages/HomePage.jsx"));
+const MovementsPage = lazy(() => import("./pages/MovementsPage.jsx"));
+const RecordsPage = lazy(() => import("./pages/RecordsPage.jsx"));
+const UsersPage = lazy(() => import("./pages/UsersPage.jsx"));
 
 export default function AircraftMovementLogbook() {
   // Zustand store
@@ -34,9 +41,12 @@ export default function AircraftMovementLogbook() {
     hasBiometricCredential,
     isBiometricSupported,
     deleteBiometricCredential,
+    updateNotificationPreferences,
+    getNotificationPreferences,
+    toggleDarkMode,
+    getDarkMode,
+    isAdmin,
   } = useLogbookStore();
-
-  const isAdmin = currentUser === (import.meta.env.VITE_ADMIN_USERNAME || "admin");
 
   const handleLogin = async (username, password) => {
     const success = await login(username, password);
@@ -58,101 +68,52 @@ export default function AircraftMovementLogbook() {
   };
 
   const handleDeleteEntry = (id, owner) => {
-    if (owner !== currentUser && !isAdmin) return;
+    if (owner !== currentUser && !isAdmin(currentUser)) return;
     deleteEntry(id, owner);
   };
 
   const handleUpdateEntry = (id, owner, updates) => {
-    if (owner !== currentUser && !isAdmin) return false;
+    if (owner !== currentUser && !isAdmin(currentUser)) return false;
     updateEntry(id, owner, updates);
     return true;
   };
 
 
-  const [activeTab, setActiveTab] = useState("ALL");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedUser, setSelectedUser] = useState("ALL_USERS");
-
-  const [movementDate, setMovementDate] = useState(new Date().toISOString().slice(0, 10));
-  const [aircraft, setAircraft] = useState("");
-  const [movementType, setMovementType] = useState("Tow");
-  const [fromStand, setFromStand] = useState("");
-  const [toStand, setToStand] = useState("");
-  const [notes, setNotes] = useState("");
-  const [showAircraftSuggestions, setShowAircraftSuggestions] = useState(false);
-
+  // Custom hooks for form and filter management
+  const movementForm = useMovementForm();
+  const { toasts, addToast, removeToast } = useToast();
   const [newReg, setNewReg] = useState("");
   const [newType, setNewType] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
-
-  const recordsPerPage = 10;
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [activeTab, searchTerm, selectedUser]);
+  const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
-    if (!successMessage) return;
-    const timeout = setTimeout(() => setSuccessMessage(""), 5000);
-    return () => clearTimeout(timeout);
-  }, [successMessage]);
-
-  const filteredAircraftOptions = useMemo(() => {
-    if (!aircraft.trim()) return fleet.slice(0, 12);
-    return fleet.filter((plane) => plane.toLowerCase().includes(aircraft.toLowerCase())).slice(0, 12);
-  }, [aircraft, fleet]);
+    if (currentUser && history[currentUser]) {
+      requestNotificationPermission();
+      const preferences = getNotificationPreferences(currentUser);
+      checkAndNotifyInactivity(history[currentUser], currentUser, preferences);
+      checkAndNotifyUpcomingInactivity(history[currentUser], currentUser, preferences);
+    }
+  }, [currentUser, history]);
 
   const currentUserHistory = useMemo(() => history[currentUser] || [], [history, currentUser]);
 
-  const userOptions = useMemo(() => {
-    const keys = [...Object.keys(users), ...Object.keys(history)];
-    return ["ALL_USERS", ...Array.from(new Set(keys)).filter(Boolean)];
-  }, [history, users]);
-
-  const filteredHistory = useMemo(() => {
-    return currentUserHistory.filter((entry) => {
-      const searchable = `
-        ${entry.aircraft}
-        ${entry.fromStand}
-        ${entry.toStand}
-        ${entry.notes}
-        ${entry.date}
-        ${entry.time}
-      `.toLowerCase();
-      return searchable.includes(searchTerm.toLowerCase());
-    });
-  }, [currentUserHistory, searchTerm]);
-
   const allHistory = useMemo(() => {
-    if (!isAdmin) return [];
+    if (!isAdmin(currentUser)) return [];
     return Object.values(history).flat();
-  }, [history, isAdmin]);
+  }, [history, isAdmin, currentUser]);
 
-  const typeFilteredHistory = useMemo(() => {
-    let filtered = isAdmin ? allHistory : filteredHistory;
-    
-    if (selectedUser !== "ALL_USERS" && isAdmin) {
-      filtered = filtered.filter(entry => entry.createdBy === selectedUser);
-    }
-    
-    if (activeTab !== "ALL") {
-      filtered = filtered.filter(entry => {
-        const aircraftType = entry.aircraft.split(' - ')[1];
-        return aircraftType === activeTab;
-      });
-    }
-    
-    return filtered;
-  }, [activeTab, allHistory, filteredHistory, isAdmin, selectedUser]);
+  // Use movement filters hook
+  const filters = useMovementFilters(currentUserHistory, allHistory, isAdmin(currentUser), currentUser);
 
-  const totalPages = Math.max(1, Math.ceil(typeFilteredHistory.length / recordsPerPage));
-  const paginatedHistory = typeFilteredHistory.slice((currentPage - 1) * recordsPerPage, currentPage * recordsPerPage);
+  const filteredAircraftOptions = useMemo(() => {
+    if (!movementForm.aircraft.trim()) return fleet.slice(0, 12);
+    return fleet.filter((plane) => plane.toLowerCase().includes(movementForm.aircraft.toLowerCase())).slice(0, 12);
+  }, [movementForm.aircraft, fleet]);
 
   const stats = useMemo(() => {
-    const data = isAdmin ? allHistory : currentUserHistory;
+    const data = isAdmin(currentUser) ? allHistory : currentUserHistory;
     const aircraftCounts = {};
     const standCounts = {};
     const userMovements = {};
@@ -173,72 +134,63 @@ export default function AircraftMovementLogbook() {
   }, [allHistory, currentUserHistory]);
 
   const userSummary = useMemo(() => {
-    if (!isAdmin) return [];
+    if (!isAdmin(currentUser)) return [];
     
     return Object.entries(history).map(([username, userHistory]) => ({
       username,
       movements: userHistory.length,
     }));
-  }, [history, isAdmin]);
+  }, [history, isAdmin, currentUser]);
 
   const handleResetFleet = () => {
     if (window.confirm("Reset fleet to default TUI Airways list? This will remove any custom additions.")) {
       resetFleet();
-      setSuccessMessage("Fleet reset to default.");
+      addToast("Fleet reset to default.", "success");
     }
   };
 
   const handleAddAircraftToFleet = () => {
     if (!newReg.trim() || !newType) {
-      alert("Please enter both registration and type.");
+      addToast("Please enter both registration and type.", "warning");
       return;
     }
     const newAircraft = `${newReg.toUpperCase()} - ${newType}`;
     if (fleet.includes(newAircraft)) {
-      alert("Aircraft already exists in fleet.");
+      addToast("Aircraft already exists in fleet.", "error");
       return;
     }
     addAircraftToFleet(newReg, newType);
     setNewReg("");
     setNewType("");
-    setSuccessMessage("Aircraft added to fleet.");
+    addToast("Aircraft added to fleet.", "success");
   };
 
   const handleAddLogEntry = () => {
-    if (!aircraft || !fromStand || !toStand) {
-      alert("Please complete all required fields.");
-      return;
-    }
-    if (fromStand === toStand) {
-      alert("From Stand and To Stand cannot match.");
+    if (!movementForm.validateForm()) {
+      addToast("Please fix form errors.", "warning");
       return;
     }
 
     const entry = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       createdBy: currentUser,
-      aircraft,
+      aircraft: movementForm.aircraft,
       airport: AIRPORT,
-      movementType,
-      fromStand,
-      toStand,
-      notes,
-      date: movementDate,
+      movementType: movementForm.movementType,
+      fromStand: movementForm.fromStand,
+      toStand: movementForm.toStand,
+      notes: movementForm.notes,
+      date: movementForm.movementDate,
       time: new Date().toLocaleTimeString(),
     };
 
     addLogEntryToHistory(entry);
-    setAircraft("");
-    setFromStand("");
-    setToStand("");
-    setNotes("");
-    setMovementType("Tow");
-    setShowAircraftSuggestions(false);
-    setSuccessMessage("Movement added successfully.");
+    movementForm.resetForm();
+    addToast("Movement added successfully.", "success");
   };
 
   const exportLogbook = () => {
-    const exportData = isAdmin ? allHistory : filteredHistory;
+    const exportData = isAdmin(currentUser) ? allHistory : filters.filteredHistory;
     exportLogbookCSV(exportData);
   };
 
@@ -258,17 +210,19 @@ export default function AircraftMovementLogbook() {
   }
 
   return (
-    <>
+    <ErrorBoundary>
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
       {isLoading && <LoadingOverlay message={loadingMessage} />}
-      <Routes>
+      <Suspense fallback={<LoadingOverlay message="Loading page..." />}>
+        <Routes>
       <Route
-        element={<AppShell fleetCount={fleet.length} currentUser={currentUser} isAdmin={isAdmin} onLogout={handleLogout} />}
+        element={<AppShell fleetCount={fleet.length} currentUser={currentUser} isAdmin={isAdmin(currentUser)} onLogout={handleLogout} darkMode={getDarkMode(currentUser)} />}
       >
         <Route
           path="/"
           element={
             <HomePage
-              isAdmin={isAdmin}
+              isAdmin={isAdmin(currentUser)}
               userSummary={userSummary}
               stats={stats}
               history={history}
@@ -286,27 +240,27 @@ export default function AircraftMovementLogbook() {
           path="/movements"
           element={
             <MovementsPage
-              isAdmin={isAdmin}
+              isAdmin={isAdmin(currentUser)}
               currentUser={currentUser}
               allHistoryLength={allHistory.length}
               currentUserHistoryLength={currentUserHistory.length}
-              movementDate={movementDate}
-              setMovementDate={setMovementDate}
-              aircraft={aircraft}
-              setAircraft={setAircraft}
-              movementType={movementType}
-              setMovementType={setMovementType}
-              fromStand={fromStand}
-              setFromStand={setFromStand}
-              toStand={toStand}
-              setToStand={setToStand}
-              notes={notes}
-              setNotes={setNotes}
+              movementDate={movementForm.movementDate}
+              setMovementDate={movementForm.setMovementDate}
+              aircraft={movementForm.aircraft}
+              setAircraft={movementForm.setAircraft}
+              movementType={movementForm.movementType}
+              setMovementType={movementForm.setMovementType}
+              fromStand={movementForm.fromStand}
+              setFromStand={movementForm.setFromStand}
+              toStand={movementForm.toStand}
+              setToStand={movementForm.setToStand}
+              notes={movementForm.notes}
+              setNotes={movementForm.setNotes}
               movementTypes={MOVEMENT_TYPES}
               airportStands={AIRPORT_STANDS}
               filteredAircraftOptions={filteredAircraftOptions}
-              showAircraftSuggestions={showAircraftSuggestions}
-              setShowAircraftSuggestions={setShowAircraftSuggestions}
+              showAircraftSuggestions={movementForm.showAircraftSuggestions}
+              setShowAircraftSuggestions={movementForm.setShowAircraftSuggestions}
               handleAddLogEntry={handleAddLogEntry}
               successMessage={successMessage}
               clearSuccessMessage={() => setSuccessMessage("")}
@@ -317,26 +271,26 @@ export default function AircraftMovementLogbook() {
           path="/records"
           element={
             <RecordsPage
-              isAdmin={isAdmin}
+              isAdmin={isAdmin(currentUser)}
               currentUser={currentUser}
               allHistoryLength={allHistory.length}
               currentUserHistoryLength={currentUserHistory.length}
-              paginatedHistory={paginatedHistory}
+              paginatedHistory={filters.paginatedHistory}
               handleDeleteEntry={handleDeleteEntry}
               handleEditEntry={handleUpdateEntry}
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
+              searchTerm={filters.searchTerm}
+              setSearchTerm={filters.setSearchTerm}
+              activeTab={filters.activeTab}
+              setActiveTab={filters.setActiveTab}
               tuiAircraftTypes={TUI_AIRCRAFT_TYPES}
-              totalPages={totalPages}
-              currentPage={currentPage}
-              setCurrentPage={setCurrentPage}
-              typeFilteredHistory={typeFilteredHistory}
+              totalPages={filters.totalPages}
+              currentPage={filters.currentPage}
+              setCurrentPage={filters.setCurrentPage}
+              typeFilteredHistory={filters.typeFilteredHistory}
               exportLogbook={exportLogbook}
-              selectedUser={selectedUser}
-              setSelectedUser={setSelectedUser}
-              userOptions={userOptions}
+              selectedUser={filters.selectedUser}
+              setSelectedUser={filters.setSelectedUser}
+              userOptions={filters.userOptions}
               stats={stats}
               history={history}
               fleet={fleet}
@@ -346,7 +300,7 @@ export default function AircraftMovementLogbook() {
         <Route
           path="/users"
           element={
-            isAdmin ? (
+            isAdmin(currentUser) ? (
               <UsersPage
                 users={users}
                 history={history}
@@ -368,11 +322,16 @@ export default function AircraftMovementLogbook() {
               isBiometricSupported={isBiometricSupported()}
               onRegisterBiometric={registerBiometric}
               onDeleteBiometricCredential={deleteBiometricCredential}
+              notificationPreferences={getNotificationPreferences(currentUser)}
+              onUpdateNotificationPreferences={updateNotificationPreferences}
+              darkMode={getDarkMode(currentUser)}
+              onToggleDarkMode={() => toggleDarkMode(currentUser)}
             />
           }
         />
       </Route>
     </Routes>
-    </>
+      </Suspense>
+    </ErrorBoundary>
   );
 }

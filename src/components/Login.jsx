@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 
 const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames, onRegisterBiometric, onLoginWithBiometric, hasBiometricCredential, isBiometricSupported }) => {
   const [username, setUsername] = useState("");
@@ -10,16 +11,19 @@ const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames, onRegi
   const [message, setMessage] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [biometricLoading, setBiometricLoading] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
 
-  // Load saved credentials on component mount
+  // Load saved username on component mount (password not stored for security)
   useEffect(() => {
-    const savedUsername = localStorage.getItem('tui-logbook-remember-username');
-    const savedPassword = localStorage.getItem('tui-logbook-remember-password');
-    const savedRememberMe = localStorage.getItem('tui-logbook-remember-me') === 'true';
-    
-    if (savedUsername) setUsername(savedUsername);
-    if (savedPassword) setPassword(savedPassword);
-    setRememberMe(savedRememberMe);
+    try {
+      const savedUsername = localStorage.getItem('tui-logbook-remember-username');
+      const savedRememberMe = localStorage.getItem('tui-logbook-remember-me') === 'true';
+      
+      if (savedUsername) setUsername(savedUsername);
+      setRememberMe(savedRememberMe);
+    } catch (error) {
+      console.error('Failed to load saved username:', error);
+    }
   }, []);
 
   const handleBiometricLogin = async () => {
@@ -89,9 +93,11 @@ const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames, onRegi
       return;
     }
 
+    setAuthLoading(true);
     if (isRegistering) {
       if (password !== confirmPassword) {
         setMessage("Passwords do not match.");
+        setAuthLoading(false);
         return;
       }
       if (await onRegister(username.trim(), password)) {
@@ -104,72 +110,75 @@ const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames, onRegi
       }
     } else {
       if (await onLogin(username.trim(), password)) {
-        // Save credentials if remember me is checked
-        if (rememberMe) {
-          localStorage.setItem('tui-logbook-remember-username', username.trim());
-          localStorage.setItem('tui-logbook-remember-password', password);
-          localStorage.setItem('tui-logbook-remember-me', 'true');
-        } else {
-          // Clear saved credentials if remember me is unchecked
-          localStorage.removeItem('tui-logbook-remember-username');
-          localStorage.removeItem('tui-logbook-remember-password');
-          localStorage.removeItem('tui-logbook-remember-me');
+        // Save only username if remember me is checked (password not stored for security)
+        try {
+          if (rememberMe) {
+            localStorage.setItem('tui-logbook-remember-username', username.trim());
+            localStorage.setItem('tui-logbook-remember-me', 'true');
+          } else {
+            // Clear saved credentials if remember me is unchecked
+            localStorage.removeItem('tui-logbook-remember-username');
+            localStorage.removeItem('tui-logbook-remember-me');
+          }
+        } catch (error) {
+          console.error('Failed to save username preference:', error);
         }
         setMessage("");
       } else {
         setMessage("Invalid username or password.");
       }
     }
+    setAuthLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-sky-200 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+    <div className="min-h-screen bg-sky-200 dark:bg-slate-900 flex items-center justify-center">
+      <div className="bg-white dark:bg-slate-800 p-8 rounded-lg shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6 text-center">
           {isRegistering ? "Register" : "Login"}
         </h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-gray-700 mb-2">Username</label>
+            <label className="block text-gray-700 dark:text-gray-300 mb-2">Username</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-slate-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required={!forgotMode}
             />
           </div>
           {!forgotMode && (
             <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Password</label>
+              <label className="block text-gray-700 dark:text-gray-300 mb-2">Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-slate-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required={!forgotMode}
               />
             </div>
           )}
           {isRegistering && !forgotMode && (
             <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Confirm Password</label>
+              <label className="block text-gray-700 dark:text-gray-300 mb-2">Confirm Password</label>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-slate-700 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
             </div>
           )}
           {message && (
-            <div className="mb-4 text-sm text-red-600">
+            <div className="mb-4 text-sm text-red-600 dark:text-red-400">
               {message}
             </div>
           )}
           {recoveryResult && (
-            <div className="mb-4 text-sm text-slate-700 bg-slate-100 rounded-md p-3">
+            <div className="mb-4 text-sm text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-md p-3">
               {recoveryResult}
             </div>
           )}
@@ -182,7 +191,7 @@ const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames, onRegi
                   onChange={(e) => setRememberMe(e.target.checked)}
                   className="mr-2"
                 />
-                <span className="text-gray-700">Remember username and password</span>
+                <span className="text-gray-700 dark:text-gray-300">Remember username</span>
               </label>
             </div>
           )}
@@ -212,9 +221,12 @@ const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames, onRegi
           )}
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={authLoading}
+            className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
-            {forgotMode
+            {authLoading
+              ? "Processing..."
+              : forgotMode
               ? "Recovery Info"
               : isRegistering
               ? "Register"
@@ -228,7 +240,7 @@ const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames, onRegi
               setMessage("");
               setRecoveryResult("");
             }}
-            className="w-full mt-4 text-blue-500 hover:text-blue-600"
+            className="w-full mt-4 text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300"
           >
             Forgot password?
           </button>
@@ -240,7 +252,7 @@ const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames, onRegi
               setMessage("");
               setRecoveryResult("");
             }}
-            className="w-full mt-4 text-blue-500 hover:text-blue-600"
+            className="w-full mt-4 text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300"
           >
             Back to login
           </button>
@@ -248,7 +260,7 @@ const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames, onRegi
         {!forgotMode && (
           <button
             onClick={() => setIsRegistering(!isRegistering)}
-            className="w-full mt-4 text-blue-500 hover:text-blue-600"
+            className="w-full mt-4 text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300"
           >
             {isRegistering ? "Already have an account? Login" : "Need an account? Register"}
           </button>
@@ -262,7 +274,7 @@ const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames, onRegi
                 ? `Registered usernames: ${onListUsernames().join(", ")}`
                 : "No registered usernames yet.");
             }}
-            className="w-full mt-4 text-blue-500 hover:text-blue-600"
+            className="w-full mt-4 text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300"
           >
             Forgot username?
           </button>
@@ -270,6 +282,17 @@ const Login = ({ onLogin, onRegister, onRecoverPassword, onListUsernames, onRegi
       </div>
     </div>
   );
+};
+
+Login.propTypes = {
+  onLogin: PropTypes.func.isRequired,
+  onRegister: PropTypes.func.isRequired,
+  onRecoverPassword: PropTypes.func.isRequired,
+  onListUsernames: PropTypes.func.isRequired,
+  onRegisterBiometric: PropTypes.func.isRequired,
+  onLoginWithBiometric: PropTypes.func.isRequired,
+  hasBiometricCredential: PropTypes.func.isRequired,
+  isBiometricSupported: PropTypes.bool.isRequired,
 };
 
 export default Login;

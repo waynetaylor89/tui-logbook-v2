@@ -1,6 +1,8 @@
 import { useState } from "react";
+import PropTypes from "prop-types";
 import { exportToPDF } from "../utils/exportPDF.js";
 import { exportToExcel, exportToExcelMultiple } from "../utils/exportExcel.js";
+import { toast } from "./Toast.jsx";
 
 const ExportOptions = ({ 
   data, 
@@ -13,7 +15,7 @@ const ExportOptions = ({
 
   const handleExport = async (type) => {
     if (data.length === 0) {
-      alert("No data available to export");
+      toast.warning("No data available to export");
       return;
     }
 
@@ -32,7 +34,7 @@ const ExportOptions = ({
           if (isAdmin) {
             await exportToExcelMultiple(data, `tui-${title.toLowerCase().replace(/\s+/g, '-')}`);
           } else {
-            alert("Multi-sheet export is only available for administrators");
+            toast.error("Multi-sheet export is only available for administrators");
             return;
           }
           break;
@@ -48,7 +50,7 @@ const ExportOptions = ({
       }
     } catch (error) {
       console.error("Export failed:", error);
-      alert(`Export failed: ${error.message}`);
+      toast.error(`Export failed: ${error.message}`);
     } finally {
       setIsExporting(false);
       setExportType("");
@@ -70,7 +72,7 @@ const ExportOptions = ({
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
-      alert('Please allow popups to print');
+      toast.warning('Please allow popups to print');
       return;
     }
 
@@ -417,6 +419,13 @@ const ExportOptions = ({
       )}
     </div>
   );
+};
+
+ExportOptions.propTypes = {
+  data: PropTypes.array.isRequired,
+  isAdmin: PropTypes.bool,
+  title: PropTypes.string,
+  onExportComplete: PropTypes.func,
 };
 
 export default ExportOptions;

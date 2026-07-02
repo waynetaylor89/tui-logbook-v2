@@ -4,7 +4,7 @@ export const exportToPDF = (data, filename = 'tui-logbook-export.pdf') => {
   const printWindow = window.open('', '_blank');
   
   if (!printWindow) {
-    alert('Please allow popups to export PDF');
+    console.warn('Please allow popups to export PDF');
     return;
   }
 

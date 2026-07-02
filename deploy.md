@@ -5,7 +5,6 @@
 ### Prerequisites
 - Vercel account (free)
 - GitHub account
-- Supabase project URL and keys
 
 ### Steps
 
@@ -22,16 +21,11 @@
    - Import your GitHub repository
    - Vercel will auto-detect Vite settings
 
-3. **Configure Environment Variables**
-   In Vercel dashboard → Settings → Environment Variables:
-   ```
-   VITE_SUPABASE_URL=your_supabase_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   ```
-
-4. **Deploy**
+3. **Deploy**
    - Vercel will automatically build and deploy
    - Your app will be live at `https://your-project-name.vercel.app`
+
+**Note:** This app uses localStorage for data persistence. Data is stored locally in the user's browser and is not synced across devices or users.
 
 ## Alternative: Netlify
 
@@ -53,12 +47,8 @@
 
 ## Environment Setup
 
-1. Copy `.env.example` to `.env.local`
-2. Add your Supabase credentials:
-   ```
-   VITE_SUPABASE_URL=https://your-project.supabase.co
-   VITE_SUPABASE_ANON_KEY=your-anon-key
-   ```
+1. Copy `.env.example` to `.env.local` (optional - for admin credentials if needed)
+2. The app uses localStorage for data persistence, no external database required
 
 ## PWA Features
 
@@ -70,10 +60,10 @@ Your app includes:
 ## Post-Deployment Checklist
 
 - [ ] Test all routes work correctly
-- [ ] Verify Supabase connection
 - [ ] Test PWA installation on mobile
 - [ ] Check offline functionality
 - [ ] Verify form submissions work
+- [ ] Test localStorage persistence across browser sessions
 
 ## Custom Domain (Optional)
 

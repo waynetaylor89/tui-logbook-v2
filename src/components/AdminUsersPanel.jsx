@@ -1,4 +1,6 @@
 import { useState } from "react";
+import PropTypes from "prop-types";
+import { toast } from "./Toast.jsx";
 
 export default function AdminUsersPanel({ users, userSummary, onDeleteUser, onResetPassword }) {
   const [passwordInputs, setPasswordInputs] = useState({});
@@ -66,11 +68,12 @@ export default function AdminUsersPanel({ users, userSummary, onDeleteUser, onRe
                       onClick={async () => {
                         const password = passwordInputs[row.username];
                         if (!password || password.trim().length < 3) {
-                          alert("Enter a new password with at least 3 characters.");
+                          toast.warning("Enter a new password with at least 3 characters.");
                           return;
                         }
                         await onResetPassword(row.username, password.trim());
                         setPasswordInputs((prev) => ({ ...prev, [row.username]: "" }));
+                        toast.success("Password reset successfully.");
                       }}
                       className="px-3 py-2 rounded-xl bg-blue-600 text-white text-sm hover:bg-blue-700"
                     >
@@ -92,3 +95,15 @@ export default function AdminUsersPanel({ users, userSummary, onDeleteUser, onRe
     </div>
   );
 }
+
+AdminUsersPanel.propTypes = {
+  users: PropTypes.object.isRequired,
+  userSummary: PropTypes.arrayOf(
+    PropTypes.shape({
+      username: PropTypes.string.isRequired,
+      movements: PropTypes.number.isRequired,
+    })
+  ).isRequired,
+  onDeleteUser: PropTypes.func.isRequired,
+  onResetPassword: PropTypes.func.isRequired,
+};

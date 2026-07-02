@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useState } from "react";
+import PropTypes from "prop-types";
 import Header from "../components/Header.jsx";
 import Breadcrumbs from "../components/Breadcrumbs.jsx";
 
@@ -7,23 +8,23 @@ const navClass = ({ isActive }) =>
   `px-3 py-1.5 rounded-lg font-medium text-sm transition-all duration-200 ${
     isActive 
       ? "bg-sky-700 text-white shadow-md" 
-      : "bg-slate-50 text-slate-700 hover:bg-slate-100"
+      : "bg-slate-50 text-slate-700 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
   }`;
 
-export default function AppShell({ fleetCount, currentUser, isAdmin, onLogout }) {
+export default function AppShell({ fleetCount, currentUser, isAdmin, onLogout, darkMode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-sky-50">
+    <div className={`min-h-screen bg-gradient-to-br ${darkMode ? 'from-slate-900 to-slate-800' : 'from-slate-50 to-sky-50'}`}>
       <div className="min-h-screen p-3 lg:p-6">
         <div className="max-w-7xl mx-auto space-y-4">
           {/* Mobile Navigation */}
-          <div className="lg:hidden bg-white rounded-2xl shadow-lg p-4">
+          <div className={`lg:hidden rounded-2xl shadow-lg p-4 ${darkMode ? 'bg-slate-800' : 'bg-white'}`}>
             <div className="flex justify-between items-center">
-              <h1 className="text-lg font-bold text-sky-800">TUI Logbook</h1>
+              <h1 className={`text-lg font-bold ${darkMode ? 'text-sky-400' : 'text-sky-800'}`}>TUI Logbook</h1>
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-700"
+                className={`p-2 rounded-lg ${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-sky-400' : 'bg-sky-100 hover:bg-sky-200 text-sky-700'}`}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   {isMobileMenuOpen ? (
@@ -59,7 +60,7 @@ export default function AppShell({ fleetCount, currentUser, isAdmin, onLogout })
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:block bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-4 flex flex-wrap gap-2 border border-sky-100">
+          <div className={`hidden lg:block rounded-2xl shadow-lg p-4 flex flex-wrap gap-2 border ${darkMode ? 'bg-slate-800/90 backdrop-blur-sm border-slate-700' : 'bg-white/90 backdrop-blur-sm border-sky-100'}`}>
             <NavLink to="/" end className={navClass}>
               🏠 Home
             </NavLink>
@@ -87,3 +88,11 @@ export default function AppShell({ fleetCount, currentUser, isAdmin, onLogout })
     </div>
   );
 }
+
+AppShell.propTypes = {
+  fleetCount: PropTypes.number.isRequired,
+  currentUser: PropTypes.string.isRequired,
+  isAdmin: PropTypes.bool.isRequired,
+  onLogout: PropTypes.func.isRequired,
+  darkMode: PropTypes.bool,
+};
