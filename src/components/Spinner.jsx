@@ -29,10 +29,20 @@ Spinner.propTypes = {
 
 export const LoadingOverlay = memo(function LoadingOverlay({ message = "Loading..." }) {
   return (
-    <div className="fixed inset-0 bg-white bg-opacity-90 flex items-center justify-center z-50">
-      <div className="text-center">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-sm"
+      role="status"
+      aria-live="polite"
+      aria-label={message}
+    >
+      <div className="w-full max-w-sm rounded-2xl border border-slate-700 bg-slate-900/80 p-5 text-center shadow-2xl">
         <Spinner size="xl" />
-        <p className="mt-4 text-slate-600 font-medium">{message}</p>
+        <p className="mt-4 text-sm font-medium text-slate-200">{message}</p>
+        <div className="mt-4 space-y-2">
+          <div className="h-2 animate-pulse rounded bg-slate-700/80" />
+          <div className="h-2 w-5/6 animate-pulse rounded bg-slate-700/60" />
+          <div className="h-2 w-2/3 animate-pulse rounded bg-slate-700/50" />
+        </div>
       </div>
     </div>
   );
@@ -46,7 +56,7 @@ export const InlineSpinner = memo(function InlineSpinner({ message, size = "sm" 
   return (
     <div className="flex items-center space-x-2">
       <Spinner size={size} />
-      {message && <span className="text-slate-600 text-sm">{message}</span>}
+      {message && <span className="text-sm text-slate-300">{message}</span>}
     </div>
   );
 });

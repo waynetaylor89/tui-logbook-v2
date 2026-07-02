@@ -1,5 +1,4 @@
 import { useLocation, Link } from "react-router-dom";
-import PropTypes from "prop-types";
 import { memo } from "react";
 
 const Breadcrumbs = memo(function Breadcrumbs() {
@@ -9,9 +8,15 @@ const Breadcrumbs = memo(function Breadcrumbs() {
     const pathnames = location.pathname.split('/').filter(x => x);
     
     const breadcrumbMap = {
-      '': 'Home',
-      'movements': 'Aircraft Movements',
-      'records': 'Movement Records',
+      '': 'Statistics',
+      'statistics': 'Statistics',
+      'flights': 'Flight Board',
+      'my-shift': 'My Shift',
+      'fleet': 'Fleet',
+      'timeline': 'Operations Timeline',
+      'history': 'History',
+      'calendar': 'Shift Calendar',
+      'import': 'FlightRadar24 Import',
       'users': 'Manage Users'
     };
 
@@ -24,11 +29,11 @@ const Breadcrumbs = memo(function Breadcrumbs() {
         <span key={routeTo} className="flex items-center">
           {index > 0 && <span className="mx-2 text-slate-400">/</span>}
           {isLast ? (
-            <span className="text-slate-900 font-medium">{displayName}</span>
+            <span className="font-medium text-slate-200">{displayName}</span>
           ) : (
             <Link 
               to={routeTo} 
-              className="text-blue-600 hover:text-blue-800 transition-colors"
+              className="text-sky-300 transition-colors hover:text-sky-200"
             >
               {displayName}
             </Link>
@@ -39,9 +44,9 @@ const Breadcrumbs = memo(function Breadcrumbs() {
   };
 
   return (
-    <nav className="flex items-center space-x-1 text-sm py-2 px-4 bg-slate-50 rounded-lg">
-      <Link to="/" className="text-blue-600 hover:text-blue-800 transition-colors">
-        🏠
+    <nav className="ops-panel flex items-center space-x-1 rounded-xl px-4 py-2 text-sm text-slate-300">
+      <Link to="/statistics" className="text-sky-300 transition-colors hover:text-sky-200">
+        Statistics
       </Link>
       {getBreadcrumbs()}
     </nav>

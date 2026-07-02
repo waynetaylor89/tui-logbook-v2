@@ -4,8 +4,7 @@ const AdvancedSearch = ({
   history, 
   fleet, 
   onSearchResults, 
-  onClearSearch,
-  isAdmin 
+  onClearSearch
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({
@@ -14,7 +13,6 @@ const AdvancedSearch = ({
     movementType: "all",
     fromStand: "all",
     toStand: "all",
-    user: "all"
   });
 
   // Get unique values for filter options
@@ -84,8 +82,7 @@ const AdvancedSearch = ({
         movement.toStand === filters.toStand;
 
       // User filter
-      const userMatch = filters.user === 'all' || 
-        movement.createdBy === filters.user;
+      const userMatch = true;
 
       return textMatch && dateMatch && aircraftTypeMatch && 
              movementTypeMatch && fromStandMatch && toStandMatch && userMatch;
@@ -104,7 +101,6 @@ const AdvancedSearch = ({
       movementType: "all",
       fromStand: "all",
       toStand: "all",
-      user: "all"
     });
     onClearSearch();
   };
@@ -114,14 +110,14 @@ const AdvancedSearch = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 space-y-4">
+    <div className="ops-panel space-y-4 rounded-2xl p-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-          🔍 Advanced Search
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-100">
+          Advanced Search
         </h3>
         <button
           onClick={handleClear}
-          className="text-sm text-slate-500 hover:text-slate-700"
+          className="text-sm text-slate-400 hover:text-slate-200"
         >
           Clear All
         </button>
@@ -129,7 +125,7 @@ const AdvancedSearch = ({
 
       {/* Text Search */}
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-2">
+        <label className="mb-2 block text-sm font-medium text-slate-300">
           Search Text
         </label>
         <input
@@ -137,13 +133,13 @@ const AdvancedSearch = ({
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search aircraft, stands, notes..."
-          className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+          className="w-full rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-slate-100 placeholder:text-slate-500 focus:outline-none"
         />
       </div>
 
       {/* Date Range */}
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-2">
+        <label className="mb-2 block text-sm font-medium text-slate-300">
           Date Range
         </label>
         <div className="grid grid-cols-2 gap-2">
@@ -151,13 +147,13 @@ const AdvancedSearch = ({
             type="date"
             value={filters.dateRange.start}
             onChange={(e) => updateFilter('dateRange', { ...filters.dateRange, start: e.target.value })}
-            className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+            className="rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-slate-100"
           />
           <input
             type="date"
             value={filters.dateRange.end}
             onChange={(e) => updateFilter('dateRange', { ...filters.dateRange, end: e.target.value })}
-            className="px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+            className="rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-slate-100"
           />
         </div>
       </div>
@@ -166,13 +162,13 @@ const AdvancedSearch = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Aircraft Type */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
+          <label className="mb-2 block text-sm font-medium text-slate-300">
             Aircraft Type
           </label>
           <select
             value={filters.aircraftType}
             onChange={(e) => updateFilter('aircraftType', e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+            className="w-full rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-slate-100"
           >
             <option value="all">All Types</option>
             {filterOptions.aircraftTypes.map(type => (
@@ -183,13 +179,13 @@ const AdvancedSearch = ({
 
         {/* Movement Type */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
+          <label className="mb-2 block text-sm font-medium text-slate-300">
             Movement Type
           </label>
           <select
             value={filters.movementType}
             onChange={(e) => updateFilter('movementType', e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+            className="w-full rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-slate-100"
           >
             <option value="all">All Types</option>
             {filterOptions.movementTypes.map(type => (
@@ -200,13 +196,13 @@ const AdvancedSearch = ({
 
         {/* From Stand */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
+          <label className="mb-2 block text-sm font-medium text-slate-300">
             From Stand
           </label>
           <select
             value={filters.fromStand}
             onChange={(e) => updateFilter('fromStand', e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+            className="w-full rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-slate-100"
           >
             <option value="all">All Stands</option>
             {filterOptions.stands.map(stand => (
@@ -217,13 +213,13 @@ const AdvancedSearch = ({
 
         {/* To Stand */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
+          <label className="mb-2 block text-sm font-medium text-slate-300">
             To Stand
           </label>
           <select
             value={filters.toStand}
             onChange={(e) => updateFilter('toStand', e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+            className="w-full rounded-lg border border-slate-700 bg-slate-900/60 px-3 py-2 text-slate-100"
           >
             <option value="all">All Stands</option>
             {filterOptions.stands.map(stand => (
@@ -231,42 +227,23 @@ const AdvancedSearch = ({
             ))}
           </select>
         </div>
-
-        {/* User Filter (Admin Only) */}
-        {isAdmin && (
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Created By
-            </label>
-            <select
-              value={filters.user}
-              onChange={(e) => updateFilter('user', e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
-            >
-              <option value="all">All Users</option>
-              {filterOptions.users.map(user => (
-                <option key={user} value={user}>{user}</option>
-              ))}
-            </select>
-          </div>
-        )}
       </div>
 
       {/* Search Results Count */}
-      <div className="flex items-center justify-between pt-4 border-t border-slate-200">
-        <div className="text-sm text-slate-600">
+      <div className="flex items-center justify-between border-t border-slate-700 pt-4">
+        <div className="text-sm text-slate-400">
           {filteredResults.length} results found
         </div>
         <div className="space-x-2">
           <button
             onClick={handleClear}
-            className="px-4 py-2 text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50"
+            className="rounded-lg border border-slate-700 px-4 py-2 text-slate-300 hover:bg-slate-800"
           >
             Clear
           </button>
           <button
             onClick={handleSearch}
-            className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700"
+            className="rounded-lg bg-sky-600 px-4 py-2 text-white hover:bg-sky-500"
           >
             Search
           </button>

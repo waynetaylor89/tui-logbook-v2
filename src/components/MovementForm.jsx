@@ -22,11 +22,13 @@ export default function MovementForm({
 }) {
   const normalizedAircraft = aircraft.toLowerCase();
   const showWarning = /787-8|787-800|boeing 787-800/i.test(normalizedAircraft);
+  const inputClass =
+    "w-full rounded-xl border border-slate-700 bg-slate-900/50 px-4 py-3 text-slate-100 placeholder:text-slate-500 focus:border-sky-400/60 focus:outline-none";
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-4 space-y-4">
+    <div className="ops-panel rounded-2xl p-4 space-y-4">
 
-      <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">
+      <h2 className="text-xl font-semibold text-slate-100">
         New Movement
       </h2>
 
@@ -34,7 +36,7 @@ export default function MovementForm({
         type="date"
         value={movementDate}
         onChange={(e) => setMovementDate(e.target.value)}
-        className="w-full border rounded-xl px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+        className={inputClass}
       />
 
       <div className="relative">
@@ -50,11 +52,11 @@ export default function MovementForm({
             setTimeout(() => setShowAircraftSuggestions(false), 200)
           }
           placeholder="Aircraft Registration"
-          className="w-full border rounded-xl px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+          className={inputClass}
         />
 
         {showAircraftSuggestions && (
-          <div className="absolute z-20 w-full mt-1 bg-white dark:bg-slate-700 border dark:border-slate-600 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+          <div className="absolute z-20 mt-1 max-h-60 w-full overflow-y-auto rounded-xl border border-slate-700 bg-slate-900 shadow-lg">
 
             {filteredAircraftOptions.map((plane) => (
               <button
@@ -64,7 +66,7 @@ export default function MovementForm({
                   setAircraft(plane);
                   setShowAircraftSuggestions(false);
                 }}
-                className="w-full text-left px-4 py-3 hover:bg-blue-100 dark:hover:bg-slate-600 dark:text-white"
+                className="w-full px-4 py-3 text-left text-slate-100 hover:bg-slate-800"
               >
                 {plane}
               </button>
@@ -97,7 +99,7 @@ export default function MovementForm({
       <select
         value={movementType}
         onChange={(e) => setMovementType(e.target.value)}
-        className="w-full border rounded-xl px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+        className={inputClass}
       >
         {movementTypes.map((type) => (
           <option key={type} value={type}>
@@ -113,7 +115,7 @@ export default function MovementForm({
         }
         placeholder="From Stand"
         list="from-stands"
-        className="w-full border rounded-xl px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+        className={inputClass}
       />
 
       <datalist id="from-stands">
@@ -129,7 +131,7 @@ export default function MovementForm({
         }
         placeholder="To Stand"
         list="to-stands"
-        className="w-full border rounded-xl px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+        className={inputClass}
       />
 
       <datalist id="to-stands">
@@ -143,12 +145,12 @@ export default function MovementForm({
         onChange={(e) => setNotes(e.target.value)}
         placeholder="Movement Notes"
         rows={3}
-        className="w-full border rounded-xl px-4 py-3 bg-slate-50 dark:bg-slate-700 dark:border-slate-600 dark:text-white resize-none"
+        className={`${inputClass} resize-none`}
       />
 
       <button
         onClick={addLogEntry}
-        className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 dark:hover:bg-blue-500"
+        className="w-full rounded-xl border border-sky-400/50 bg-gradient-to-r from-sky-500 to-cyan-500 py-3 font-semibold text-slate-950 hover:brightness-110"
       >
         Add Movement
       </button>

@@ -9,20 +9,20 @@ const EmptyState = memo(function EmptyState({
   actionText 
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-6">
-      <div className="text-6xl mb-4 text-slate-300">
+    <div className="flex flex-col items-center justify-center px-6 py-12">
+      <div className="mb-4 text-6xl text-slate-400">
         {icon}
       </div>
-      <h3 className="text-xl font-semibold text-slate-800 mb-2">
+      <h3 className="mb-2 text-xl font-semibold text-slate-100">
         {title}
       </h3>
-      <p className="text-slate-600 text-center mb-6 max-w-md">
+      <p className="mb-6 max-w-md text-center text-slate-300">
         {message}
       </p>
       {action && (
         <button
           onClick={action}
-          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          className="min-h-11 rounded-lg bg-sky-600 px-6 py-2 text-white transition-colors hover:bg-sky-500"
         >
           {actionText}
         </button>

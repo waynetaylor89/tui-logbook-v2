@@ -8,9 +8,9 @@ export default function FleetManager({
   resetFleet,
 }) {
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-4 space-y-4">
+    <div className="space-y-4 rounded-2xl border border-slate-700 bg-slate-950/50 p-4">
 
-      <h2 className="text-xl font-bold text-slate-800">
+      <h2 className="text-xl font-semibold text-slate-100">
         Fleet Manager
       </h2>
 
@@ -20,13 +20,13 @@ export default function FleetManager({
           setNewReg(e.target.value.toUpperCase())
         }
         placeholder="Aircraft Registration"
-        className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+        className="w-full rounded-xl border border-slate-700 bg-slate-900/60 px-4 py-3 text-slate-100 placeholder:text-slate-500"
       />
 
       <select
         value={newType}
         onChange={(e) => setNewType(e.target.value)}
-        className="w-full border rounded-xl px-4 py-3 bg-slate-50"
+        className="w-full rounded-xl border border-slate-700 bg-slate-900/60 px-4 py-3 text-slate-100"
       >
         <option value="">
           Select Aircraft Type
@@ -41,14 +41,14 @@ export default function FleetManager({
 
       <button
         onClick={addAircraftToFleet}
-        className="w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold"
+        className="w-full rounded-xl bg-emerald-600 py-3 font-semibold text-white"
       >
         Add Aircraft
       </button>
 
       <button
         onClick={resetFleet}
-        className="w-full bg-red-600 text-white py-3 rounded-xl font-semibold"
+        className="w-full rounded-xl bg-rose-700 py-3 font-semibold text-white"
       >
         Reset Fleet to Default
       </button>

@@ -1,9 +1,8 @@
 import { useState, useMemo } from "react";
 
-export const useMovementFilters = (currentUserHistory, allHistory, isAdmin, currentUser) => {
+export const useMovementFilters = (currentUserHistory) => {
   const [activeTab, setActiveTab] = useState("ALL");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedUser, setSelectedUser] = useState("ALL_USERS");
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 10;
 
@@ -22,11 +21,7 @@ export const useMovementFilters = (currentUserHistory, allHistory, isAdmin, curr
   }, [currentUserHistory, searchTerm]);
 
   const typeFilteredHistory = useMemo(() => {
-    let filtered = isAdmin ? allHistory : filteredHistory;
-    
-    if (selectedUser !== "ALL_USERS" && isAdmin) {
-      filtered = filtered.filter(entry => entry.createdBy === selectedUser);
-    }
+    let filtered = filteredHistory;
     
     if (activeTab !== "ALL") {
       filtered = filtered.filter(entry => {
@@ -36,18 +31,10 @@ export const useMovementFilters = (currentUserHistory, allHistory, isAdmin, curr
     }
     
     return filtered;
-  }, [activeTab, allHistory, filteredHistory, isAdmin, selectedUser]);
+  }, [activeTab, filteredHistory]);
 
   const totalPages = Math.max(1, Math.ceil(typeFilteredHistory.length / recordsPerPage));
   const paginatedHistory = typeFilteredHistory.slice((currentPage - 1) * recordsPerPage, currentPage * recordsPerPage);
-
-  const userOptions = useMemo(() => {
-    const keys = [...Object.keys(allHistory?.reduce((acc, entry) => {
-      if (!acc[entry.createdBy]) acc[entry.createdBy] = true;
-      return acc;
-    }, {}))];
-    return ["ALL_USERS", ...Array.from(new Set(keys)).filter(Boolean)];
-  }, [allHistory]);
 
   // Reset page when filters change
   const resetPage = () => setCurrentPage(1);
@@ -57,15 +44,12 @@ export const useMovementFilters = (currentUserHistory, allHistory, isAdmin, curr
     setActiveTab,
     searchTerm,
     setSearchTerm,
-    selectedUser,
-    setSelectedUser,
     currentPage,
     setCurrentPage,
     filteredHistory,
     typeFilteredHistory,
     paginatedHistory,
     totalPages,
-    userOptions,
     resetPage,
   };
 };

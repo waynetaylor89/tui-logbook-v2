@@ -18,22 +18,25 @@ class ErrorBoundary extends Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
-          <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">Something went wrong</h1>
-            <p className="text-slate-700 mb-4">
+        <div className="flex min-h-screen items-center justify-center bg-slate-950 p-4">
+          <div className="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-8 shadow-xl">
+            <h1 className="mb-4 text-2xl font-bold text-rose-300">Something went wrong</h1>
+            <p className="mb-2 text-slate-200">
               An unexpected error occurred. Please refresh the page to try again.
+            </p>
+            <p className="mb-4 text-sm text-slate-400">
+              If you are offline, reconnect briefly so the latest assets can sync, then reload.
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="w-full bg-sky-600 text-white py-2 px-4 rounded-md hover:bg-sky-700 transition-colors"
+              className="w-full rounded-md bg-sky-600 px-4 py-2 text-white transition-colors hover:bg-sky-500"
             >
               Refresh Page
             </button>
-            {process.env.NODE_ENV === 'development' && (
+            {process.env.NODE_ENV === "development" && (
               <details className="mt-4">
-                <summary className="cursor-pointer text-slate-600">Error details</summary>
-                <pre className="mt-2 p-4 bg-slate-100 rounded text-xs overflow-auto">
+                <summary className="cursor-pointer text-slate-400">Error details</summary>
+                <pre className="mt-2 overflow-auto rounded bg-slate-950 p-4 text-xs text-slate-300">
                   {this.state.error?.toString()}
                 </pre>
               </details>

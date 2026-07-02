@@ -5,9 +5,6 @@ import AdvancedSearch from "../components/AdvancedSearch.jsx";
 import ExportOptions from "../components/ExportOptions.jsx";
 
 export default function RecordsPage({
-  isAdmin,
-  currentUser,
-  allHistoryLength,
   currentUserHistoryLength,
   paginatedHistory,
   handleDeleteEntry,
@@ -22,9 +19,6 @@ export default function RecordsPage({
   setCurrentPage,
   typeFilteredHistory,
   exportLogbook,
-  selectedUser,
-  setSelectedUser,
-  userOptions,
   stats,
   history,
   fleet,
@@ -46,27 +40,26 @@ export default function RecordsPage({
   };
 
   const displayHistory = isAdvancedSearchActive ? searchResults : paginatedHistory;
-  const displayTotal = isAdvancedSearchActive ? searchResults.length : 
-    (isAdmin ? allHistoryLength : currentUserHistoryLength);
+  const displayTotal = isAdvancedSearchActive ? searchResults.length : currentUserHistoryLength;
 
   return (
     <div className="space-y-4">
-      <div className="bg-white rounded-2xl shadow-lg p-4">
+      <div className="ops-panel rounded-2xl p-4">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div>
-            <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-              📋 Movement Records
+            <h2 className="text-2xl font-semibold text-slate-100 flex items-center gap-2">
+              Movement Records
             </h2>
-            <div className="text-sm text-slate-500">View all saved records in one place.</div>
+            <div className="text-sm text-slate-400">Review and update all logged stand movements.</div>
           </div>
           <div className="flex items-center gap-4">
             <button
               onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
-              className="px-3 py-1 text-sm bg-sky-100 text-sky-700 rounded-lg hover:bg-sky-200"
+              className="rounded-xl border border-sky-400/40 bg-sky-500/15 px-3 py-1 text-sm text-sky-200 hover:bg-sky-500/25"
             >
               {showAdvancedSearch ? 'Hide' : 'Show'} Advanced Search
             </button>
-            <div className="text-sm text-slate-500">
+            <div className="ops-pill rounded-xl px-3 py-1.5 text-sm text-slate-300">
               {displayTotal} records total
               {isAdvancedSearchActive && ' (filtered)'}
             </div>
@@ -81,7 +74,6 @@ export default function RecordsPage({
           fleet={fleet}
           onSearchResults={handleAdvancedSearch}
           onClearSearch={handleClearAdvancedSearch}
-          isAdmin={isAdmin}
         />
       )}
       
@@ -117,11 +109,6 @@ export default function RecordsPage({
           setCurrentPage={setCurrentPage}
           typeFilteredHistory={typeFilteredHistory}
           exportLogbook={exportLogbook}
-          isAdmin={isAdmin}
-          currentUser={currentUser}
-          selectedUser={selectedUser}
-          setSelectedUser={setSelectedUser}
-          userOptions={userOptions}
           stats={stats}
         />
       )}
@@ -129,7 +116,6 @@ export default function RecordsPage({
       {/* Export Options */}
       <ExportOptions 
         data={displayHistory}
-        isAdmin={isAdmin}
         title="Movement Records"
         onExportComplete={(type) => {
           console.log(`Export completed: ${type}`);

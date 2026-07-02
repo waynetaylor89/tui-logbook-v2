@@ -1,16 +1,32 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import PropTypes from "prop-types";
+
+const toastListeners = new Set();
+
+function emitToast(message, type) {
+  for (const listener of toastListeners) {
+    listener(message, type);
+  }
+}
 
 export const useToast = () => {
   const [toasts, setToasts] = useState([]);
 
-  const addToast = (message, type = "info") => {
+  const addToast = useCallback((message, type = "info") => {
     const id = Date.now();
     setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((toast) => toast.id !== id));
     }, 5000);
-  };
+  }, []);
+
+  useEffect(() => {
+    const listener = (message, type) => addToast(message, type);
+    toastListeners.add(listener);
+    return () => {
+      toastListeners.delete(listener);
+    };
+  }, [addToast]);
 
   const removeToast = (id) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
@@ -57,8 +73,8 @@ ToastContainer.propTypes = {
 };
 
 export const toast = {
-  success: (message) => console.log("Toast success:", message),
-  error: (message) => console.log("Toast error:", message),
-  warning: (message) => console.log("Toast warning:", message),
-  info: (message) => console.log("Toast info:", message),
+  success: (message) => emitToast(message, "success"),
+  error: (message) => emitToast(message, "error"),
+  warning: (message) => emitToast(message, "warning"),
+  info: (message) => emitToast(message, "info"),
 };

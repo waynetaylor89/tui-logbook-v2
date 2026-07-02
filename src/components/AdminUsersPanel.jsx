@@ -1,16 +1,6 @@
-import { useState } from "react";
 import PropTypes from "prop-types";
-import { toast } from "./Toast.jsx";
 
-export default function AdminUsersPanel({ users, userSummary, onDeleteUser, onResetPassword }) {
-  const [passwordInputs, setPasswordInputs] = useState({});
-
-  const handlePasswordChange = (username, value) => {
-    setPasswordInputs((prev) => ({
-      ...prev,
-      [username]: value,
-    }));
-  };
+export default function AdminUsersPanel({ users, userSummary, onDeleteUser }) {
 
   return (
     <div className="space-y-4">
@@ -34,7 +24,6 @@ export default function AdminUsersPanel({ users, userSummary, onDeleteUser, onRe
             <tr>
               <th className="px-4 py-3 font-medium text-slate-500">Username</th>
               <th className="px-4 py-3 font-medium text-slate-500">Movements</th>
-              <th className="px-4 py-3 font-medium text-slate-500">Password</th>
               <th className="px-4 py-3 font-medium text-slate-500">Actions</th>
             </tr>
           </thead>
@@ -52,33 +41,7 @@ export default function AdminUsersPanel({ users, userSummary, onDeleteUser, onRe
                     {row.username}
                   </td>
                   <td className="px-4 py-3">{row.movements}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                      <input
-                        type="password"
-                        placeholder="New password"
-                        value={passwordInputs[row.username] || ""}
-                        onChange={(e) => handlePasswordChange(row.username, e.target.value)}
-                        className="w-full sm:w-64 px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </td>
                   <td className="px-4 py-3 space-y-2 sm:space-y-0 sm:flex sm:items-center sm:gap-2">
-                    <button
-                      onClick={async () => {
-                        const password = passwordInputs[row.username];
-                        if (!password || password.trim().length < 3) {
-                          toast.warning("Enter a new password with at least 3 characters.");
-                          return;
-                        }
-                        await onResetPassword(row.username, password.trim());
-                        setPasswordInputs((prev) => ({ ...prev, [row.username]: "" }));
-                        toast.success("Password reset successfully.");
-                      }}
-                      className="px-3 py-2 rounded-xl bg-blue-600 text-white text-sm hover:bg-blue-700"
-                    >
-                      Reset Password
-                    </button>
                     <button
                       onClick={() => onDeleteUser(row.username)}
                       className="px-3 py-2 rounded-xl bg-red-500 text-white text-sm hover:bg-red-600"
@@ -105,5 +68,4 @@ AdminUsersPanel.propTypes = {
     })
   ).isRequired,
   onDeleteUser: PropTypes.func.isRequired,
-  onResetPassword: PropTypes.func.isRequired,
 };

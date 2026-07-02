@@ -1,73 +1,140 @@
-# TUI Logbook Deployment Guide
+# Sprint 27: Android Deployment Runbook
 
-## Quick Deploy to Vercel (Recommended)
+This document prepares TUI Logbook V2 for production hosting and Android PWA usage.
 
-### Prerequisites
-- Vercel account (free)
-- GitHub account
+## 1. Production Build
 
-### Steps
+### Standard production build
 
-1. **Push to GitHub**
-   ```bash
-   git add .
-   git commit -m "Add deployment configuration"
-   git push origin main
-   ```
+```bash
+npm install
+npm run build
+```
 
-2. **Deploy on Vercel**
-   - Go to [vercel.com](https://vercel.com)
-   - Click "New Project"
-   - Import your GitHub repository
-   - Vercel will auto-detect Vite settings
+Output is generated in `dist`.
 
-3. **Deploy**
-   - Vercel will automatically build and deploy
-   - Your app will be live at `https://your-project-name.vercel.app`
+### GitHub Pages production build (repository project pages)
 
-**Note:** This app uses localStorage for data persistence. Data is stored locally in the user's browser and is not synced across devices or users.
+If deploying under `https://<user>.github.io/<repo>/`, build with a base path:
 
-## Alternative: Netlify
+PowerShell:
 
-1. **Create netlify.toml**
-   ```toml
-   [build]
-     publish = "dist"
-     command = "npm run build"
+```powershell
+$env:VITE_BASE_PATH='/<repo>/'; npm run build
+```
 
-   [[redirects]]
-     from = "/*"
-     to = "/index.html"
-     status = 200
-   ```
+Reset variable after build (optional):
 
-2. **Deploy**
-   - Drag `dist` folder to [netlify.com](https://netlify.com)
-   - Or connect GitHub repo for auto-deploys
+```powershell
+Remove-Item Env:VITE_BASE_PATH
+```
 
-## Environment Setup
+## 2. Verification Checklist
 
-1. Copy `.env.example` to `.env.local` (optional - for admin credentials if needed)
-2. The app uses localStorage for data persistence, no external database required
+Run these checks before deploying:
 
-## PWA Features
+1. Manifest exists and contains required app metadata.
+2. Service Worker is generated (`dist/sw.js`).
+3. PWA registration file exists (`dist/registerSW.js`).
+4. Install prompt appears on supported Android browsers.
+5. Offline mode serves app shell and cached flights.
 
-Your app includes:
-- Service worker for offline functionality
-- App manifest for installability
-- Responsive design
+## 3. Platform Deployment
 
-## Post-Deployment Checklist
+## GitHub Pages
 
-- [ ] Test all routes work correctly
-- [ ] Test PWA installation on mobile
-- [ ] Check offline functionality
-- [ ] Verify form submissions work
-- [ ] Test localStorage persistence across browser sessions
+1. Ensure repository has workflow in `.github/workflows/deploy-gh-pages.yml`.
+2. Push to `main`.
+3. In GitHub: Settings > Pages > Source = GitHub Actions.
+4. The workflow builds and deploys `dist` to Pages.
 
-## Custom Domain (Optional)
+Important:
 
-In Vercel/Netlify dashboard:
-- Go to Domain settings
-- Add your custom domain
-- Update DNS records as instructed
+- For project pages, set `VITE_BASE_PATH` in workflow env to `/<repo>/`.
+- `.nojekyll` is included to prevent Jekyll processing.
+
+## Netlify
+
+1. Connect repository in Netlify.
+2. Build command: `npm run build`
+3. Publish directory: `dist`
+4. Deploy.
+
+Notes:
+
+- `netlify.toml` is provided.
+- SPA routing fallback is configured.
+
+## Vercel
+
+1. Import repository into Vercel.
+2. Framework preset: Vite.
+3. Build command: `npm run build`
+4. Output directory: `dist`
+5. Deploy.
+
+Notes:
+
+- `vercel.json` is included with SPA rewrite and caching headers.
+
+## Cloudflare Pages
+
+1. Create a new Pages project from this repository.
+2. Framework preset: Vite.
+3. Build command: `npm run build`
+4. Build output directory: `dist`
+5. Deploy.
+
+Notes:
+
+- `public/_redirects` provides SPA fallback on Pages.
+
+## 4. Android PWA Usage
+
+## Install on Android
+
+1. Open the deployed app in Chrome.
+2. Wait for page to fully load online at least once.
+3. Tap browser menu > Install app or Add to Home screen.
+4. Confirm install.
+
+## Update app
+
+1. Open the installed app while online.
+2. If update is available, tap Update Now in the update banner.
+3. App reloads with latest assets.
+
+## Clear cache
+
+In Android Chrome:
+
+1. Open `chrome://settings/siteData`.
+2. Search for your app domain.
+3. Delete site data.
+
+Or from Android settings:
+
+1. Settings > Apps > Chrome > Storage.
+2. Clear site storage for the app domain.
+
+## Reinstall app
+
+1. Uninstall app from Android launcher.
+2. Clear site data (recommended).
+3. Reopen website and install again from browser menu.
+
+## 5. Post-Deploy Smoke Test
+
+1. Open deployed URL.
+2. Confirm app loads and routes resolve after refresh.
+3. Confirm manifest and icons load.
+4. Confirm service worker active in browser dev tools.
+5. Enable airplane mode and reopen app.
+6. Confirm cached shell renders and offline indicators behave correctly.
+
+## 6. Data Persistence Note
+
+This app stores operational data in browser localStorage per device/browser profile.
+
+- Data does not sync between devices by default.
+- Clearing browser data removes local app data.

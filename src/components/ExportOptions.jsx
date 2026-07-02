@@ -6,7 +6,6 @@ import { toast } from "./Toast.jsx";
 
 const ExportOptions = ({ 
   data, 
-  isAdmin = false, 
   title = "Movement Records",
   onExportComplete 
 }) => {
@@ -29,14 +28,6 @@ const ExportOptions = ({
           break;
         case 'excel':
           await exportToExcel(data, `tui-${title.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().slice(0, 10)}.csv`);
-          break;
-        case 'excel-multi':
-          if (isAdmin) {
-            await exportToExcelMultiple(data, `tui-${title.toLowerCase().replace(/\s+/g, '-')}`);
-          } else {
-            toast.error("Multi-sheet export is only available for administrators");
-            return;
-          }
           break;
         case 'print':
           handlePrint();
@@ -305,12 +296,12 @@ const ExportOptions = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 space-y-4">
+    <div className="ops-panel space-y-4 rounded-2xl p-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-          📤 Export Options
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-slate-100">
+          Export Options
         </h3>
-        <div className="text-sm text-slate-500">
+        <div className="text-sm text-slate-400">
           {data.length} records
         </div>
       </div>
@@ -320,7 +311,7 @@ const ExportOptions = ({
         <button
           onClick={() => handleExport('pdf')}
           disabled={isExporting || data.length === 0}
-          className="flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center justify-center gap-2 rounded-lg bg-rose-600 px-4 py-3 text-white transition-colors hover:bg-rose-500 disabled:cursor-not-allowed disabled:bg-slate-700"
         >
           {isExporting && exportType === 'pdf' ? (
             <>
@@ -338,7 +329,7 @@ const ExportOptions = ({
         <button
           onClick={() => handleExport('excel')}
           disabled={isExporting || data.length === 0}
-          className="flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-3 text-white transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:bg-slate-700"
         >
           {isExporting && exportType === 'excel' ? (
             <>
@@ -352,31 +343,11 @@ const ExportOptions = ({
           )}
         </button>
 
-        {/* Multi-Sheet Excel Export (Admin Only) */}
-        {isAdmin && (
-          <button
-            onClick={() => handleExport('excel-multi')}
-            disabled={isExporting || data.length === 0}
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
-          >
-            {isExporting && exportType === 'excel-multi' ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Exporting...
-              </>
-            ) : (
-              <>
-                📑 Multi-Sheet Excel
-              </>
-            )}
-          </button>
-        )}
-
         {/* Print */}
         <button
           onClick={() => handleExport('print')}
           disabled={isExporting || data.length === 0}
-          className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 py-3 text-white transition-colors hover:bg-sky-500 disabled:cursor-not-allowed disabled:bg-slate-700"
         >
           {isExporting && exportType === 'print' ? (
             <>
@@ -391,7 +362,7 @@ const ExportOptions = ({
         </button>
       </div>
 
-      <div className="space-y-2 text-sm text-slate-600">
+      <div className="space-y-2 text-sm text-slate-300">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 bg-red-500 rounded-full"></div>
           <span><strong>PDF:</strong> Professional formatted report for sharing and archiving</span>
@@ -400,12 +371,6 @@ const ExportOptions = ({
           <div className="w-2 h-2 bg-green-500 rounded-full"></div>
           <span><strong>Excel:</strong> Data spreadsheet for analysis and calculations</span>
         </div>
-        {isAdmin && (
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-            <span><strong>Multi-Sheet:</strong> Detailed analysis with multiple data views</span>
-          </div>
-        )}
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
           <span><strong>Print:</strong> Optimized print layout for physical copies</span>
@@ -413,7 +378,7 @@ const ExportOptions = ({
       </div>
 
       {data.length === 0 && (
-        <div className="text-center py-4 text-slate-500 bg-slate-50 rounded-lg">
+        <div className="rounded-lg bg-slate-900/50 py-4 text-center text-slate-500">
           No data available to export
         </div>
       )}
@@ -423,7 +388,6 @@ const ExportOptions = ({
 
 ExportOptions.propTypes = {
   data: PropTypes.array.isRequired,
-  isAdmin: PropTypes.bool,
   title: PropTypes.string,
   onExportComplete: PropTypes.func,
 };
