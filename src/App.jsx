@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import Login from "./components/Login.jsx";
+// Login screen removed — assume `currentUser` is always available.
 import UserSettings from "./components/UserSettings.jsx";
 import AppShell from "./layouts/AppShell.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
@@ -239,20 +239,7 @@ export default function AircraftMovementLogbook() {
     exportLogbookCSV(exportData);
   };
 
-  if (!currentUser) {
-    return (
-      <Login
-        onLogin={handleLogin}
-        onRegister={handleRegister}
-        onRecoverPassword={() => {}}
-        onListUsernames={() => Object.keys(users)}
-        onRegisterBiometric={registerBiometric}
-        onLoginWithBiometric={loginWithBiometric}
-        hasBiometricCredential={hasBiometricCredential}
-        isBiometricSupported={isBiometricSupported()}
-      />
-    );
-  }
+  // Assume `currentUser` is always available — skip login screen.
 
   return (
     <ErrorBoundary>

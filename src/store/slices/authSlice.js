@@ -8,7 +8,7 @@ const isLegacyPasswordMatch = (record, password) => record?.password && record.p
 
 export const createAuthSlice = (set, get) => ({
   users: {},
-  currentUser: null,
+  currentUser: "Wayne",
   hasHydrated: false,
 
   setUsers: (users) => set({ users }),

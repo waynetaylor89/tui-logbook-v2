@@ -25,3 +25,6 @@ dist-ssr
 
 # Embedded git repository
 tui-logbook/
+
+.vercel
+.env*

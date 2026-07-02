@@ -23,6 +23,16 @@ export const isWebAuthnSupported = () => {
   return !!window.navigator.credentials && !!window.navigator.credentials.create && !!window.navigator.credentials.get;
 };
 
+export const isBiometricAvailable = async () => {
+  if (!isWebAuthnSupported()) return false;
+  if (!window.PublicKeyCredential || !PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) return false;
+  try {
+    return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+  } catch (e) {
+    return false;
+  }
+};
+
 export const registerBiometric = async (username) => {
   if (!isWebAuthnSupported()) {
     throw new Error('WebAuthn is not supported in this browser');
