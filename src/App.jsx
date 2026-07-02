@@ -117,16 +117,61 @@ export default function AircraftMovementLogbook() {
     const aircraftCounts = {};
     const standCounts = {};
     const userMovements = {};
+    const today = new Date().toISOString().slice(0, 10);
+    const thisMonth = new Date().toISOString().slice(0, 7);
+    
+    let aircraftToday = new Set();
+    let arrivalsToday = 0;
+    let departuresToday = 0;
+    let monthlyMovements = 0;
 
     data.forEach((entry) => {
       aircraftCounts[entry.aircraft] = (aircraftCounts[entry.aircraft] || 0) + 1;
       standCounts[entry.fromStand] = (standCounts[entry.fromStand] || 0) + 1;
       standCounts[entry.toStand] = (standCounts[entry.toStand] || 0) + 1;
       userMovements[entry.createdBy] = (userMovements[entry.createdBy] || 0) + 1;
+
+      // Today's stats
+      if (entry.date === today) {
+        aircraftToday.add(entry.aircraft);
+        if (entry.movementType === "Tow" || entry.movementType === "Power Move") {
+          arrivalsToday++;
+        }
+        if (entry.movementType === "Tow" || entry.movementType === "Power Move") {
+          departuresToday++;
+        }
+      }
+
+      // Monthly stats
+      if (entry.date.startsWith(thisMonth)) {
+        monthlyMovements++;
+      }
     });
+
+    // Calculate logging streak
+    const uniqueDates = [...new Set(data.map(entry => entry.date))].sort().reverse();
+    let currentStreak = 0;
+    let checkDate = new Date();
+    
+    for (const dateStr of uniqueDates) {
+      const entryDate = new Date(dateStr);
+      const diffDays = Math.floor((checkDate - entryDate) / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 0 || diffDays === 1) {
+        currentStreak++;
+        checkDate = entryDate;
+      } else {
+        break;
+      }
+    }
 
     return {
       totalMovements: data.length,
+      aircraftToday: aircraftToday.size,
+      arrivalsToday,
+      departuresToday,
+      monthlyMovements,
+      currentStreak,
       topAircraft: Object.entries(aircraftCounts).sort((a, b) => b[1] - a[1]).slice(0, 3),
       topStands: Object.entries(standCounts).sort((a, b) => b[1] - a[1]).slice(0, 3),
       topUsers: Object.entries(userMovements).sort((a, b) => b[1] - a[1]).slice(0, 3),

@@ -3,13 +3,15 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import Header from "../components/Header.jsx";
 import Breadcrumbs from "../components/Breadcrumbs.jsx";
+import { AVIATION_COLORS } from "../config/logbookConfig.js";
 
-const navClass = ({ isActive }) =>
-  `px-3 py-1.5 rounded-lg font-medium text-sm transition-all duration-200 ${
-    isActive 
-      ? "bg-sky-700 text-white shadow-md" 
-      : "bg-slate-50 text-slate-700 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-  }`;
+const navClass = ({ isActive }) => {
+  const baseClasses = "px-3 py-1.5 rounded-lg font-medium text-sm transition-all duration-200";
+  if (isActive) {
+    return `${baseClasses} text-white shadow-md`;
+  }
+  return `${baseClasses} bg-slate-50 text-slate-700 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700`;
+};
 
 export default function AppShell({ fleetCount, currentUser, isAdmin, onLogout, darkMode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -21,10 +23,11 @@ export default function AppShell({ fleetCount, currentUser, isAdmin, onLogout, d
           {/* Mobile Navigation */}
           <div className={`lg:hidden rounded-2xl shadow-lg p-4 ${darkMode ? 'bg-slate-800' : 'bg-white'}`}>
             <div className="flex justify-between items-center">
-              <h1 className={`text-lg font-bold ${darkMode ? 'text-sky-400' : 'text-sky-800'}`}>TUI Logbook</h1>
+              <h1 className={`text-lg font-bold`} style={{ color: AVIATION_COLORS.primary }}>TUI Logbook</h1>
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className={`p-2 rounded-lg ${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-sky-400' : 'bg-sky-100 hover:bg-sky-200 text-sky-700'}`}
+                className={`p-2 rounded-lg ${darkMode ? 'bg-slate-700 hover:bg-slate-600' : 'bg-sky-100 hover:bg-sky-200'}`}
+                style={{ color: AVIATION_COLORS.primary }}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   {isMobileMenuOpen ? (
