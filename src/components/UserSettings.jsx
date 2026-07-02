@@ -2,43 +2,14 @@ import { useState } from "react";
 
 const UserSettings = ({ 
   currentUser, 
-  hasBiometricCredential, 
-  isBiometricSupported,
-  onRegisterBiometric,
-  onDeleteBiometricCredential,
   notificationPreferences,
   onUpdateNotificationPreferences,
   darkMode,
   onToggleDarkMode
 }) => {
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
   const [notificationEnabled, setNotificationEnabled] = useState(notificationPreferences?.enabled ?? true);
   const [notificationPeriod, setNotificationPeriod] = useState(notificationPreferences?.periodDays ?? 7);
-
-  const handleRegisterBiometric = async () => {
-    setLoading(true);
-    setMessage("");
-    try {
-      await onRegisterBiometric(currentUser);
-      setMessage("Biometric credential registered successfully!");
-    } catch (error) {
-      setMessage(error.message || "Failed to register biometric credential.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteBiometric = () => {
-    if (window.confirm("Are you sure you want to remove your biometric credential? You will need to use your password to login.")) {
-      const success = onDeleteBiometricCredential(currentUser);
-      if (success) {
-        setMessage("Biometric credential removed successfully.");
-      } else {
-        setMessage("Failed to remove biometric credential.");
-      }
-    }
-  };
 
   const handleNotificationPreferencesSave = () => {
     const success = onUpdateNotificationPreferences(currentUser, { enabled: notificationEnabled, periodDays: notificationPeriod });
@@ -124,9 +95,9 @@ const UserSettings = ({
         </div>
 
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-4">Authentication Methods</h2>
+          <h2 className="text-xl font-semibold mb-4">Authentication</h2>
           
-          <div className="bg-gray-50 rounded-lg p-4 mb-4">
+          <div className="bg-gray-50 rounded-lg p-4">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-medium text-gray-900">Password Authentication</h3>
@@ -137,53 +108,6 @@ const UserSettings = ({
               </span>
             </div>
           </div>
-
-          {isBiometricSupported && (
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="font-medium text-gray-900">Biometric Authentication</h3>
-                  <p className="text-sm text-gray-600">
-                    {hasBiometricCredential(currentUser) 
-                      ? "Fingerprint or Face ID is enabled" 
-                      : "Not configured"}
-                  </p>
-                </div>
-                <span className={`px-3 py-1 rounded-full text-sm ${
-                  hasBiometricCredential(currentUser)
-                    ? "bg-green-100 text-green-800"
-                    : "bg-gray-100 text-gray-800"
-                }`}>
-                  {hasBiometricCredential(currentUser) ? "Active" : "Inactive"}
-                </span>
-              </div>
-
-              {hasBiometricCredential(currentUser) ? (
-                <button
-                  onClick={handleDeleteBiometric}
-                  className="w-full bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-                >
-                  Remove Biometric Credential
-                </button>
-              ) : (
-                <button
-                  onClick={handleRegisterBiometric}
-                  disabled={loading}
-                  className="w-full bg-purple-500 text-white py-2 px-4 rounded-md hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                >
-                  {loading ? "Registering..." : "Register Biometric Credential"}
-                </button>
-              )}
-            </div>
-          )}
-
-          {!isBiometricSupported && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <p className="text-sm text-yellow-800">
-                Biometric authentication is not supported on this device or browser.
-              </p>
-            </div>
-          )}
         </div>
 
         {message && (

@@ -27,37 +27,18 @@ export default function AircraftMovementLogbook() {
     fleet,
     history,
     hasHydrated,
-    login,
-    logout,
-    register,
     deleteUser,
     addLogEntry,
     deleteEntry,
     updateEntry,
     addAircraftToFleet,
     resetFleet,
-    registerBiometric,
-    loginWithBiometric,
-    hasBiometricCredential,
-    isBiometricSupported,
-    deleteBiometricCredential,
     updateNotificationPreferences,
     getNotificationPreferences,
     toggleDarkMode,
     getDarkMode,
     isAdmin,
   } = useLogbookStore();
-
-  const handleLogin = async (username, password) => {
-    const success = await login(username, password);
-    return success;
-  };
-
-  const handleLogout = () => logout();
-
-  const handleRegister = async (username, password) => {
-    return await register(username, password);
-  };
 
   const handleDeleteUser = (username) => {
     deleteUser(username);
@@ -89,13 +70,26 @@ export default function AircraftMovementLogbook() {
   const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
-    if (currentUser && history[currentUser]) {
-      requestNotificationPermission();
-      const preferences = getNotificationPreferences(currentUser);
-      checkAndNotifyInactivity(history[currentUser], currentUser, preferences);
-      checkAndNotifyUpcomingInactivity(history[currentUser], currentUser, preferences);
-    }
-  }, [currentUser, history]);
+  if (currentUser && history[currentUser]) {
+    /*
+    requestNotificationPermission();
+
+    const preferences = getNotificationPreferences(currentUser);
+
+    checkAndNotifyInactivity(
+      history[currentUser],
+      currentUser,
+      preferences
+    );
+
+    checkAndNotifyUpcomingInactivity(
+      history[currentUser],
+      currentUser,
+      preferences
+    );
+    */
+  }
+}, [currentUser, history]);
 
   const currentUserHistory = useMemo(() => history[currentUser] || [], [history, currentUser]);
 
@@ -241,6 +235,13 @@ export default function AircraftMovementLogbook() {
 
   // Assume `currentUser` is always available — skip login screen.
 
+  if (!hasHydrated) {
+    return <LoadingOverlay message="Loading logbook..." />;
+  }
+  if (!currentUser) {
+    return <LoadingOverlay message="Loading user..." />;
+  }
+
   return (
     <ErrorBoundary>
       <ToastContainer toasts={toasts} onRemove={removeToast} />
@@ -248,7 +249,7 @@ export default function AircraftMovementLogbook() {
       <Suspense fallback={<LoadingOverlay message="Loading page..." />}>
         <Routes>
       <Route
-        element={<AppShell fleetCount={fleet.length} currentUser={currentUser} isAdmin={isAdmin(currentUser)} onLogout={handleLogout} darkMode={getDarkMode(currentUser)} />}
+        element={<AppShell fleetCount={fleet.length} currentUser={currentUser} isAdmin={isAdmin(currentUser)} darkMode={getDarkMode(currentUser)} />}
       >
         <Route
           path="/"
@@ -350,10 +351,6 @@ export default function AircraftMovementLogbook() {
           element={
             <UserSettings
               currentUser={currentUser}
-              hasBiometricCredential={hasBiometricCredential}
-              isBiometricSupported={isBiometricSupported()}
-              onRegisterBiometric={registerBiometric}
-              onDeleteBiometricCredential={deleteBiometricCredential}
               notificationPreferences={getNotificationPreferences(currentUser)}
               onUpdateNotificationPreferences={updateNotificationPreferences}
               darkMode={getDarkMode(currentUser)}
