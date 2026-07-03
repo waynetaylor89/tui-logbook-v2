@@ -8,6 +8,7 @@ import FlightRadarHistory from "./FlightRadarHistory.jsx";
 import FlightRadarMapping from "./FlightRadarMapping.jsx";
 import FlightRadarFilters from "./FlightRadarFilters.jsx";
 import FlightRadarPreview from "./FlightRadarPreview.jsx";
+import FlightRadarUrlImport from "./FlightRadarUrlImport.jsx";
 
 export default function FlightRadarImport() {
   const { flights, fr24ImportHistory, importDailySchedule, addFlightRadarImportHistory } = useLogbookStore();
@@ -147,6 +148,8 @@ export default function FlightRadarImport() {
           <div className="ops-pill rounded-xl px-3 py-1.5 text-xs text-slate-300">{(flights || []).length} flights in store</div>
         </div>
       </section>
+
+      <FlightRadarUrlImport />
 
       <section className="ops-panel rounded-2xl p-4 sm:p-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">

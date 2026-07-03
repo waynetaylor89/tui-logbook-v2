@@ -142,5 +142,19 @@
     "scheduledTime": "19:40",
     "status": "Scheduled",
     "stand": "17"
+  },
+  {
+    "id": "flt-013",
+    "flightNumber": "BY2466",
+    "aircraftRegistration": "G-TUMA",
+    "aircraftType": "Boeing 787-8 Dreamliner",
+    "movement": "Departure",
+    "origin": "Manchester",
+    "destination": "Tenerife",
+    "scheduledTime": "18:20",
+    "status": "Scheduled",
+    "stand": "18",
+    "claimed": true,
+    "claimedBy": "Wayne"
   }
 ]

@@ -67,7 +67,7 @@ if (!self.define) {
     });
   };
 }
-define(['./workbox-9f27910d'], (function (workbox) { 'use strict';
+define(['./workbox-80fd1ace'], (function (workbox) { 'use strict';
 
   self.skipWaiting();
   workbox.clientsClaim();
@@ -81,7 +81,7 @@ define(['./workbox-9f27910d'], (function (workbox) { 'use strict';
     "revision": "3ca0b8505b4bec776b69afdba2768812"
   }, {
     "url": "index.html",
-    "revision": "0.h85p7gfa298"
+    "revision": "0.ol1s7g85jd8"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {
@@ -90,15 +90,46 @@ define(['./workbox-9f27910d'], (function (workbox) { 'use strict';
   workbox.registerRoute(({
     request
   }) => request.mode === "navigate", new workbox.NetworkFirst({
-    "cacheName": "pages-cache",
+    "cacheName": "app-shell-cache",
     "networkTimeoutSeconds": 3,
     plugins: []
+  }), 'GET');
+  workbox.registerRoute(({
+    url
+  }) => /icon-.*\.png$/i.test(url.pathname), new workbox.CacheFirst({
+    "cacheName": "icons-cache",
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 20,
+      maxAgeSeconds: 31536000
+    })]
   }), 'GET');
   workbox.registerRoute(({
     request
   }) => request.destination === "script" || request.destination === "style", new workbox.StaleWhileRevalidate({
     "cacheName": "assets-cache",
     plugins: []
+  }), 'GET');
+  workbox.registerRoute(({
+    request
+  }) => request.destination === "font", new workbox.CacheFirst({
+    "cacheName": "fonts-cache",
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 40,
+      maxAgeSeconds: 31536000
+    })]
+  }), 'GET');
+  workbox.registerRoute(({
+    url,
+    request
+  }) => request.method === "GET" && (url.pathname.startsWith("/api/") || url.pathname.includes("aviationstack") || url.hostname.includes("aviationstack.com")), new workbox.NetworkFirst({
+    "cacheName": "api-cache",
+    "networkTimeoutSeconds": 5,
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 100,
+      maxAgeSeconds: 43200
+    }), new workbox.CacheableResponsePlugin({
+      statuses: [0, 200]
+    })]
   }), 'GET');
   workbox.registerRoute(({
     request

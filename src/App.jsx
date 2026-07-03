@@ -20,7 +20,7 @@ const CURRENT_USER = "Wayne";
 const FlightBoardPage = lazy(() => import("./features/flights/FlightBoard.jsx"));
 const FleetPage = lazy(() => import("./features/fleet/FleetPage.jsx"));
 const MyShiftPage = lazy(() => import("./features/shift/MyShiftPage.jsx"));
-const StatisticsPage = lazy(() => import("./features/statistics/StatisticsPage.jsx"));
+const StatisticsPage = lazy(() => import("./features/liveFlights/LiveFlightDashboard.jsx"));
 const OperationsTimelinePage = lazy(() => import("./features/timeline/OperationsTimelinePage.jsx"));
 const AnalyticsDashboard = lazy(() => import("./features/analytics/AnalyticsDashboard.jsx"));
 const FlightImportPage = lazy(() => import("./features/import/flightradar24/components/FlightRadarImport.jsx"));
