@@ -105,10 +105,11 @@ export default function LiveFlightDashboard() {
     return queued || null;
   }, [shiftJobs]);
 
-  // Initial load — use FlightFeedService instead of AviationStack
+  // Initial load — use FlightFeedService (cache -> FR24 -> Mock)
   useEffect(() => {
     if (hasInitialised.current) return;
     hasInitialised.current = true;
+    let cancelled = false;
 
     // Load flights from the feed service (uses cache -> FR24 -> mock priority)
     const result = getTodaysFlights({
