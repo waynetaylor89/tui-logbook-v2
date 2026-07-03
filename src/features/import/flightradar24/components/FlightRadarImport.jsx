@@ -9,6 +9,7 @@ import FlightRadarMapping from "./FlightRadarMapping.jsx";
 import FlightRadarFilters from "./FlightRadarFilters.jsx";
 import FlightRadarPreview from "./FlightRadarPreview.jsx";
 import FlightRadarUrlImport from "./FlightRadarUrlImport.jsx";
+import { saveCachedFlights } from "../../../../services/flightFeed/flightFeedService.js";
 
 export default function FlightRadarImport() {
   const { flights, fr24ImportHistory, importDailySchedule, addFlightRadarImportHistory } = useLogbookStore();
@@ -130,6 +131,31 @@ export default function FlightRadarImport() {
       importDailySchedule,
       addFlightRadarImportHistory,
     });
+
+    // Save imported flights to the flight feed cache
+    const importedFlights = preview.flights || [];
+    if (importedFlights.length > 0) {
+      saveCachedFlights(
+        importedFlights.map((f) => ({
+          id: f.id,
+          flightNumber: f.flightNumber,
+          registration: f.registration || f.aircraftRegistration,
+          aircraftType: f.aircraftType || f.aircraft,
+          origin: f.origin,
+          destination: f.destination,
+          scheduledTime: f.scheduledTime,
+          actualTime: f.actualTime || "",
+          status: f.status,
+          terminal: f.terminal,
+          gate: f.gate,
+          stand: f.stand,
+          direction: f.movement || f.type || "Departure",
+          source: "FR24 IMPORT",
+          timestamp: new Date().toISOString(),
+        })),
+        "FR24 IMPORT"
+      );
+    }
 
     setSummary(result.summary);
     setPreview(null);

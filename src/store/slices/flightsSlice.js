@@ -1,5 +1,5 @@
 import defaultFlights from "../../features/flights/data/mockFlights.json";
-import { refreshFlights as refreshLiveFlightsFromService } from "../../services/flightService.js";
+import { refreshFlights as refreshFeedFlights, saveCachedFlights } from "../../services/flightFeed/flightFeedService.js";
 import { isTuiFlight } from "../../utils/airlines.js";
 
 export const createFlightsSlice = (set, get) => ({
@@ -49,14 +49,8 @@ export const createFlightsSlice = (set, get) => ({
     return true;
   },
 
-  refreshLiveFlights: async () => {
+  refreshLiveFlights: () => {
     const meta = get().liveFlightsMeta || {};
-    if (meta.refreshing) {
-      return {
-        ok: false,
-        error: "Refresh already in progress.",
-      };
-    }
 
     set({
       liveFlightsMeta: {
@@ -68,50 +62,39 @@ export const createFlightsSlice = (set, get) => ({
     });
 
     try {
-      const response = await refreshLiveFlightsFromService();
-      const incoming = Array.isArray(response?.data) ? response.data.map((flight) => normalizeFlight(flight)) : [];
-      const fromCache = Boolean(response?.fromCache);
-      const errorText = String(response?.error || "").trim();
+      // Use the Flight Feed Service which checks cache -> FR24 -> Mock
+      const result = refreshFeedFlights({
+        storeFlights: get().flights || [],
+        setFlights: (flights) => get().setFlights(flights),
+        importDailySchedule: (flights, opts) => get().importDailySchedule(flights, opts),
+      });
 
-      if (incoming.length === 0 && errorText) {
+      const now = new Date().toISOString();
+
+      if (!result.ok || !result.flights.length) {
         set({
           liveFlightsMeta: {
             ...get().liveFlightsMeta,
             refreshing: false,
             status: "Unavailable",
-            error: errorText,
-            fromCache,
+            error: result.error || "No flights available.",
+            fromCache: false,
           },
         });
 
         return {
           ok: false,
-          error: errorText,
-          fromCache,
+          error: result.error || "No flights available.",
+          fromCache: false,
         };
       }
 
-      const now = new Date().toISOString();
+      const incoming = result.flights;
+      const fromCache = result.source === "CACHE";
+      const nextStatus = result.source === "MOCK" ? "Mock" : result.source;
 
-      // Only replace today's flights when we have actual data from the API.
-      // If the provider returned empty due to missing API key or offline,
-      // preserve the existing flights rather than wiping them.
-      const shouldReplaceToday = incoming.length > 0 || (!errorText && !fromCache);
-
-      const importResult = get().importDailySchedule(incoming, {
-        replaceToday: shouldReplaceToday,
-        summary: {
-          importTime: now,
-          flightsImported: incoming.length,
-          arrivals: incoming.filter((flight) => (flight.movement || flight.type) === "Arrival").length,
-          departures: incoming.filter((flight) => (flight.movement || flight.type) === "Departure").length,
-          duplicates: 0,
-          errors: errorText ? 1 : 0,
-        },
-      });
-
-      const tuiFlights = incoming.filter((flight) => isTuiFlight(flight)).length;
-      const nextStatus = fromCache ? "Offline Cache" : "Live";
+      // Save to flight feed cache
+      saveCachedFlights(incoming, result.source);
 
       set({
         liveFlightsMeta: {
@@ -119,10 +102,10 @@ export const createFlightsSlice = (set, get) => ({
           refreshing: false,
           status: nextStatus,
           lastUpdated: now,
-          importedFlights: importResult?.flightsImported ?? incoming.length,
-          tuiFlights,
+          importedFlights: incoming.length,
+          tuiFlights: incoming.filter((flight) => isTuiFlight(flight)).length,
           fromCache,
-          error: errorText,
+          error: "",
         },
       });
 
@@ -130,14 +113,14 @@ export const createFlightsSlice = (set, get) => ({
         ok: true,
         status: nextStatus,
         lastUpdated: now,
-        importedFlights: importResult?.flightsImported ?? incoming.length,
-        tuiFlights,
+        importedFlights: incoming.length,
+        tuiFlights: incoming.filter((flight) => isTuiFlight(flight)).length,
         fromCache,
         offline: fromCache,
-        error: errorText,
+        error: "",
       };
     } catch (error) {
-      const message = String(error?.message || "Live refresh failed.");
+      const message = String(error?.message || "Refresh failed.");
       set({
         liveFlightsMeta: {
           ...get().liveFlightsMeta,

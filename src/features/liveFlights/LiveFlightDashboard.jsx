@@ -6,20 +6,49 @@ import OfflineIndicator from "../../components/OfflineIndicator.jsx";
 import FlightRefreshButton from "./FlightRefreshButton.jsx";
 import LiveFlightList from "./LiveFlightList.jsx";
 import PasteFlightLink from "../import/PasteFlightLink.jsx";
+import {
+  getTodaysFlights,
+  refreshFlights,
+  getCacheTimestamp,
+  getCacheSource,
+} from "../../services/flightFeed/flightFeedService.js";
+
+function formatTimeAgo(timestamp) {
+  if (!timestamp) return null;
+  const diff = Date.now() - Number(timestamp);
+  if (diff < 0) return "just now";
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "just now";
+  if (minutes === 1) return "1 minute ago";
+  if (minutes < 60) return `${minutes} minutes ago`;
+  const hours = Math.floor(minutes / 60);
+  const remain = minutes % 60;
+  if (hours === 1) return `1 hour ${remain} min ago`;
+  return `${hours} hours ${remain} min ago`;
+}
 
 export default function LiveFlightDashboard() {
   const {
     flights,
     shiftJobs,
-    refreshLiveFlights,
-    liveFlightsMeta,
+    setFlights,
+    importDailySchedule,
     addFlightToShift,
     toggleShiftChecklistItem,
     addShiftJobNote,
     completeShiftJob,
   } = useLogbookStore();
-  const hasAutoRefreshed = useRef(false);
+  const hasInitialised = useRef(false);
   const [noteText, setNoteText] = useState("");
+  const [feedSource, setFeedSource] = useState(() => {
+    const cached = getCacheSource();
+    return cached || "";
+  });
+  const [lastRefresh, setLastRefresh] = useState(() => {
+    const ts = getCacheTimestamp();
+    return ts || null;
+  });
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -76,63 +105,77 @@ export default function LiveFlightDashboard() {
     return queued || null;
   }, [shiftJobs]);
 
+  // Initial load — use FlightFeedService instead of AviationStack
   useEffect(() => {
-    if (hasAutoRefreshed.current) return;
-    if (liveFlightsMeta?.refreshing) return;
-    if (liveFlightsMeta?.lastUpdated) return;
+    if (hasInitialised.current) return;
+    hasInitialised.current = true;
 
-    hasAutoRefreshed.current = true;
-    let cancelled = false;
+    // Load flights from the feed service (uses cache -> FR24 -> mock priority)
+    const result = getTodaysFlights({
+      storeFlights: flights,
+      forceRefresh: false,
+    });
 
-    void (async () => {
-      const result = await refreshLiveFlights();
-      if (cancelled) return;
+    if (result.flights && result.flights.length > 0) {
+      setFeedSource(result.source);
+      setLastRefresh(result.timestamp || Date.now());
 
-      if (!result?.ok) {
-        // Live refresh failed — mock flights are preserved by the store fix
+      // Only replace flights if we have data
+      if (importDailySchedule) {
+        importDailySchedule(result.flights, {
+          replaceToday: true,
+          summary: {
+            flightsImported: result.flights.length,
+            arrivals: result.flights.filter((f) => String(f.direction || f.movement || f.type || "").toLowerCase().startsWith("arr")).length,
+            departures: result.flights.filter((f) => String(f.direction || f.movement || f.type || "").toLowerCase().startsWith("dep")).length,
+            duplicates: 0,
+            errors: 0,
+          },
+        });
+      }
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function handleRefresh() {
+    setIsRefreshing(true);
+
+    try {
+      const result = refreshFlights({
+        storeFlights: flights,
+        setFlights,
+        importDailySchedule,
+      });
+
+      if (!result.ok || !result.flights.length) {
+        toast.warning("No new flight data available. Using existing data.");
+        setIsRefreshing(false);
         return;
       }
 
-      if (result.offline) {
-        toast.warning("Offline mode: showing cached flights.");
-        return;
-      }
+      setFeedSource(result.source);
+      setLastRefresh(Date.now());
+      toast.success(`Feed refreshed from ${result.source}.`);
+    } catch (error) {
+      toast.error("Refresh failed. Existing flights preserved.");
+    } finally {
+      setIsRefreshing(false);
+    }
+  }
 
-      toast.success(`Live refresh complete. Imported ${result.importedFlights} flights.`);
-    })();
-
-    return () => {
-      cancelled = true;
+  function getSourceBadge() {
+    const source = feedSource || "MOCK";
+    const colors = {
+      LIVE: "border-emerald-500/40 bg-emerald-500/10 text-emerald-300",
+      "FR24 IMPORT": "border-sky-500/40 bg-sky-500/10 text-sky-300",
+      CACHE: "border-amber-500/40 bg-amber-500/10 text-amber-300",
+      MOCK: "border-slate-500/40 bg-slate-500/10 text-slate-300",
     };
-  }, [liveFlightsMeta?.lastUpdated, liveFlightsMeta?.refreshing, refreshLiveFlights]);
-
-  async function handleRefresh() {
-    const result = await refreshLiveFlights();
-
-    if (!result?.ok) {
-      toast.error(result?.error || "Live refresh failed.");
-      return;
-    }
-
-    if (result.offline) {
-      toast.warning("Offline mode: showing cached flights.");
-      return;
-    }
-
-    toast.success(`Live refresh complete. Imported ${result.importedFlights} flights.`);
-  }
-
-  function handleCompleteCurrentJob() {
-    if (!currentJob?.id) return;
-    completeShiftJob(currentJob.id);
-    toast.success(`${currentJob.flightNumber || "Current job"} completed.`);
-  }
-
-  function handleAddNote() {
-    const text = noteText.trim();
-    if (!currentJob?.id || !text) return;
-    addShiftJobNote(currentJob.id, text);
-    setNoteText("");
+    const cls = colors[source] || colors.MOCK;
+    return (
+      <span className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${cls}`}>
+        {source}
+      </span>
+    );
   }
 
   return (
@@ -140,28 +183,31 @@ export default function LiveFlightDashboard() {
       <section className="ops-panel rounded-2xl p-4 sm:p-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Live Dashboard</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Flight Feed</p>
             <h2 className="mt-1 text-2xl font-semibold text-slate-100">Today's TUI Flights</h2>
-            <p className="mt-1 text-sm text-slate-300">Mobile-first live board with offline cache support.</p>
+            <p className="mt-1 text-sm text-slate-300">TUI Flight Feed Service – offline-capable, cache-first.</p>
           </div>
-          <FlightRefreshButton refreshing={Boolean(liveFlightsMeta?.refreshing)} onRefresh={handleRefresh} />
+          <div className="flex items-center gap-2">
+            {getSourceBadge()}
+            <FlightRefreshButton refreshing={isRefreshing} onRefresh={handleRefresh} />
+          </div>
         </div>
 
         <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
-          <ConnectionStatus lastSync={liveFlightsMeta?.lastUpdated || ""} />
+          <ConnectionStatus lastSync={lastRefresh ? new Date(lastRefresh).toISOString() : ""} />
           <div className="rounded-xl border border-slate-700 bg-slate-900/55 px-3 py-2 text-xs text-slate-200">
-            Last Refresh: {liveFlightsMeta?.lastUpdated ? new Date(liveFlightsMeta.lastUpdated).toLocaleString() : "Not refreshed yet"}
+            {lastRefresh ? `Updated ${formatTimeAgo(lastRefresh)}` : "Not refreshed yet"}
           </div>
           <div className="rounded-xl border border-slate-700 bg-slate-900/55 px-3 py-2 text-xs text-slate-200">
-            Source: {liveFlightsMeta?.fromCache ? "Offline Cache" : "Live Provider"}
+            Source: {feedSource || "MOCK"}
           </div>
         </div>
 
         <div className="mt-2">
           <OfflineIndicator
-            fromCache={Boolean(liveFlightsMeta?.fromCache)}
-            cachedFlights={Number(liveFlightsMeta?.importedFlights || 0)}
-            lastSync={liveFlightsMeta?.lastUpdated || ""}
+            fromCache={feedSource === "CACHE"}
+            cachedFlights={todaysTuiFlights.length}
+            lastSync={lastRefresh ? new Date(lastRefresh).toISOString() : ""}
           />
         </div>
       </section>
@@ -291,12 +337,12 @@ function isTuiFlight(flight) {
 }
 
 function isArrival(flight) {
-  const movement = String(flight?.movement || flight?.type || "").toLowerCase();
+  const movement = String(flight?.movement || flight?.type || flight?.direction || "").toLowerCase();
   return movement.startsWith("arr");
 }
 
 function isDeparture(flight) {
-  const movement = String(flight?.movement || flight?.type || "").toLowerCase();
+  const movement = String(flight?.movement || flight?.type || flight?.direction || "").toLowerCase();
   return movement.startsWith("dep");
 }
 
