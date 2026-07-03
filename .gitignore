@@ -26,5 +26,8 @@ dist-ssr
 # Embedded git repository
 tui-logbook/
 
+# Vite PWA dev output
+dev-dist/
+
 .vercel
 .env*
