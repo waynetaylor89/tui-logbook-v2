@@ -82,8 +82,29 @@ export default function LiveFlightDashboard() {
     if (liveFlightsMeta?.lastUpdated) return;
 
     hasAutoRefreshed.current = true;
-    void handleRefresh();
-  });
+    let cancelled = false;
+
+    void (async () => {
+      const result = await refreshLiveFlights();
+      if (cancelled) return;
+
+      if (!result?.ok) {
+        // Live refresh failed — mock flights are preserved by the store fix
+        return;
+      }
+
+      if (result.offline) {
+        toast.warning("Offline mode: showing cached flights.");
+        return;
+      }
+
+      toast.success(`Live refresh complete. Imported ${result.importedFlights} flights.`);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [liveFlightsMeta?.lastUpdated, liveFlightsMeta?.refreshing, refreshLiveFlights]);
 
   async function handleRefresh() {
     const result = await refreshLiveFlights();
