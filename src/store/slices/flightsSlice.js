@@ -92,8 +92,14 @@ export const createFlightsSlice = (set, get) => ({
       }
 
       const now = new Date().toISOString();
+
+      // Only replace today's flights when we have actual data from the API.
+      // If the provider returned empty due to missing API key or offline,
+      // preserve the existing flights rather than wiping them.
+      const shouldReplaceToday = incoming.length > 0 || (!errorText && !fromCache);
+
       const importResult = get().importDailySchedule(incoming, {
-        replaceToday: true,
+        replaceToday: shouldReplaceToday,
         summary: {
           importTime: now,
           flightsImported: incoming.length,
